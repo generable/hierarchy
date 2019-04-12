@@ -2,7 +2,7 @@
 % Please edit documentation in R/formula.R
 \name{subterms}
 \alias{subterms}
-\title{Simplify interaction terms.}
+\title{Label 'term' objects}
 \usage{
 subterms(node)
 }
@@ -13,5 +13,5 @@ subterms(node)
 formula with labelled calls to 'term' function.
 }
 \description{
-Also label what are 'term' objects
+Label 'term' objects
 }

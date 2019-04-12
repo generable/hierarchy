@@ -12,8 +12,11 @@ formulate(models = list(), data)
 \item{data}{data.frame to pull formula terms from.}
 }
 \value{
-list containing the model matrix for each submodel
-        as well as plain list-form data.
+list containing 1) the list-format model
+        matrix for each formula; 2) the data used 
+        to evaluate terms for the matrix model; 
+        and 3) the sparse-format model matrix in a
+        container object.
 }
 \description{
 Calling this function constructs the (sparse) model

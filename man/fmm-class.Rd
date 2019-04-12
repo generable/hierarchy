@@ -25,11 +25,11 @@ representation
 
 \item{\code{.stop}}{where each row of the model matrix ends in nze}
 
-\item{\code{.X_vec}}{n_nze nze entries of the model matrix}
+\item{\code{.xv}}{n_nze nze entries of the model matrix}
 
 \item{\code{.y}}{dependent data vector, if applicable}
 
-\item{\code{.groups}}{index into X_vec for each group of parameters produced by the formula}
+\item{\code{.groups}}{index into xv for each group of parameters produced by the formula}
 }}
 
 \section{Methods}{
@@ -51,7 +51,7 @@ are returned.}
 
 \item{\code{get_data()}}{Get the data frame used to construct the matrix.}
 
-\item{\code{initialize(formula, data, ...)}}{Create the implicit mass matrix and store components.}
+\item{\code{initialize(formula, data, N = nrow(data), ...)}}{Create the implicit mass matrix and store components.}
 
 \item{\code{list_components()}}{Get a list of the object's fields that can be exposed.}
 }}
