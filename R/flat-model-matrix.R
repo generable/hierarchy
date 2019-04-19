@@ -65,7 +65,8 @@ fmm_factory = methods::setRefClass(Class = "fmm",
       )
       .self$.specifiers[['term']] = subterms(.self$.specifiers$standard)
       .self$.specifiers[['term_list']] = term_list(.self$.specifiers$term) 
-
+      if (!is.list(.self$.specifiers[['term_list']]))
+        .self$.specifiers[['term_list']] = list(.self$.specifiers$term_list)
       .self$.data = as.environment(data)
       .self$.data$N = N
       .self$.components = imbue(.self$.specifiers$term_list$rhs, .self$.data)

@@ -501,10 +501,16 @@ imbue = function(terms, data, methods = hierarchy:::default_imbue_methods()) {
   for (name in names(methods)) 
     assign(x = name, value = methods[[name]], pos = e)
   o = list()
-  for (t in terms) {
-    term_name = deparse(t, width.cutoff = 200L)
-    o[[length(o) + 1]] = eval(t, envir = e)
-    names(o)[length(o)] = term_name
+  if (class(terms) == 'call') {
+    term_name = deparse(terms, width.cutoff = 200L)
+    o[[1]] = eval(terms, envir = e)
+    names(o) = term_name
+  } else {
+    for (t in terms) {
+      term_name = deparse(t, width.cutoff = 200L)
+      o[[length(o) + 1]] = eval(t, envir = e)
+      names(o)[length(o)] = term_name
+    }
   }
   N = e$N
   o = extend_recursive(o, N)
