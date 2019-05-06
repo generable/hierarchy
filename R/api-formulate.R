@@ -19,7 +19,8 @@
 #' @export
 formulate = function(
   models = list(),
-  data
+  data,
+  configuration = list()
 ) {
 
   response_names = as.character(sapply(models, hierarchy:::response_name))
@@ -34,7 +35,8 @@ formulate = function(
   mm_objs = list()
   for (name in response_names) {
     mm_objs[[name]] = hierarchy:::fmm_factory(
-      formula = models[[name]], data = data)
+      formula = models[[name]], data = data,
+      configuration[[name]])
   }
 
   # These are all the parts we need to pull out from the model matrix

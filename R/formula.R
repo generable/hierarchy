@@ -66,7 +66,7 @@ has_random_terms = function(x) has_(x, 'random')
 #' @return TRUE iff the call is an interaction.
 is_interaction = function(x) is_simple(x, c(':','('))
 
-is_fname = function(x) grepl('^[[:lower:][:upper:]][[:alnum:]_]+$', x)
+is_fname = function(x) grepl('^[[:lower:][:upper:]][[:alnum:]_]*$', x)
 
 
 #' Simplify formulas to a standard form using 
@@ -86,16 +86,12 @@ is_fname = function(x) grepl('^[[:lower:][:upper:]][[:alnum:]_]+$', x)
 simplify = function(node) {
   if (is.name(node)) {
     return(node)
+  } else if (op(node) == "I") {
+    return(call('eval', arg(node)))
   } else if (op(node) == '~') {
     return(call('~', simplify(lhs(node)), simplify(rhs(node))))
   } else if (op(node) == '+') {
     return(call("+", simplify(lhs(node)), simplify(rhs(node))))
-  } else if (op(node) == '(') {
-    if (is.name(arg(node)))
-      return(arg(node))
-    else {
-      return(call("(", simplify(arg(node))))
-    }
   } else if (op(node) == '*') { 
     return(simplify(call("+", 
       call("+", lhs(node), rhs(node)), call(":", lhs(node), rhs(node)))))
@@ -105,14 +101,15 @@ simplify = function(node) {
     return(simplify(call(":", 
       call('(', lhs(node)), call('random', rhs(node))
     )))
-  } else if (is_fname(op(node))) {
-      return(call(as.character(op(node)), simplify(arg(node))))
+  } else if (op(node) == '(' || is_fname(op(node))) {
+    for (i in 2:length(node)) {
+      node[[i]] = simplify(node[[i]])
+    }
+    return(node)
   } else if (node == "1") {
     return(call('intercept'))
   } else if (node == "0") {
     return(call('no_intercept'))
-  } else if (op(node) == "I") {
-    return(call('eval', arg(node)))
   } else {
     return(node)
   }
@@ -351,6 +348,12 @@ default_imbue_methods = function() list(
     attr(x, 'effect_type') = 'fixed'
     return(x)
   },
+  radial_b_spline = function(x, k) {
+    x = radial_b_spline(x, k)
+    attr(x, 'type') = 'spline'
+    attr(x, 'effect_type') = 'fixed'
+    return(x)
+  },
   state = function(x) {
     x = 1
     attr(x, 'type') = 'covariate'
@@ -403,28 +406,28 @@ default_imbue_methods = function() list(
       x = list(...)
       names(x) = dots
       for (i in seq_along(x)) {
-	if (!is.list(x[[i]]) && is.null(attr(x[[i]], 'type'))) {
+        if (!is.list(x[[i]]) && is.null(attr(x[[i]], 'type'))) {
           x[[i]] = as.character(x[[i]])
           attr(x[[i]], 'type') = 'contrast'
           attr(x[[i]], 'effect_type') = 'random'
-	} 
+        } 
         ith_type = attr(x[[i]], 'type')
         if (!is.null(ith_type) && ith_type != 'contrast')
-	  stop(paste0("Contrast and non-contrast terms can ",
-		     "only be combined using interactions ",
-		     "specified using the ':' operator."))
+	        stop(paste0("Contrast and non-contrast terms can ",
+		        "only be combined using interactions ",
+            "specified using the ':' operator."))
         else if (is.null(ith_type)) 
-	  attr(x[[i]], 'type') = 'contrast'
+	      attr(x[[i]], 'type') = 'contrast'
         ith_effect_type = attr(x[[i]], 'effect_type')
-	if (!is.null(ith_effect_type) && ith_effect_type != 'random')
+        if (!is.null(ith_effect_type) && ith_effect_type != 'random')
           stop(paste("Random and fixed-effect terms can only be ",
-		     "combined using interactions specified with the ",
-		     "':' opeartor."))
+		        "combined using interactions specified with the ",
+		        "':' opeartor."))
         else
           attr(x[[i]], 'effect_type') = 'random'
         ith_at = attributes(x[[i]])
-	x[[i]] = as.character(x[[i]])
-	attributes(x[[i]]) = ith_at
+        x[[i]] = as.character(x[[i]])
+        attributes(x[[i]]) = ith_at
       }
     }
     return(x)
@@ -466,6 +469,8 @@ tag_missing = function(x) {
 extend_recursive = function(x, N) {
   if (!is.list(x) && length(x) == N)
     return(x)
+  if (!is.list(x) && length(dim(x)) == 2 && nrow(x) == N)
+    return(x)
   else if (!is.list(x) && length(x) != 1)
     stop(paste("Data length must be 1 or ", N))
   else if (!is.list(x)) {
@@ -494,10 +499,14 @@ N_recursive = function(x) {
 #' @return list with all formula terms defined from the 
 #'         environment.
 #' @export
-imbue = function(terms, data, methods = hierarchy:::default_imbue_methods()) {
+imbue = function(terms, data, configuration = NULL, 
+                 methods = hierarchy:::default_imbue_methods()
+) {
   e = new.env()
   for (name in names(data))
     assign(x = name, value = data[[name]], pos = e)
+  for (name in names(configuration))
+    assign(x = name, value = configuration[[name]], pos = e)
   for (name in names(methods)) 
     assign(x = name, value = methods[[name]], pos = e)
   o = list()
@@ -533,6 +542,10 @@ default_expand_methods = function() list(
   },
   constant = function(x) {
     x = Matrix::Matrix(data = x, ncol = 1)
+    return(x)
+  },
+  spline = function(x) { 
+    x = Matrix::Matrix(data = x)
     return(x)
   },
   covariate = function(x) {

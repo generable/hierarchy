@@ -53,10 +53,11 @@ fmm_factory = methods::setRefClass(Class = "fmm",
     .n_re_effects = "numeric",
     .re_start = "array",
     .re_stop = "array",
-    .data = "environment"
+    .data = "environment",
+    .configuration = "environment"
   ),
   methods = list(
-    initialize = function(formula, data, N = nrow(data), ...) {
+    initialize = function(formula, data, configuration, N = nrow(data), ...) {
       "Create the implicit mass matrix and store components."
       .self$.specifiers = list(
         original = formula,
@@ -68,8 +69,9 @@ fmm_factory = methods::setRefClass(Class = "fmm",
       if (!is.list(.self$.specifiers[['term_list']]))
         .self$.specifiers[['term_list']] = list(.self$.specifiers$term_list)
       .self$.data = as.environment(data)
+      .self$.configuration = as.environment(configuration)
       .self$.data$N = N
-      .self$.components = imbue(.self$.specifiers$term_list$rhs, .self$.data)
+      .self$.components = imbue(.self$.specifiers$term_list$rhs, .self$.data, .self$.configuration)
 
       .self$.blocks = list(subterm = expand(.self$.components))
       .self$.blocks[['term']] = combine_subterms(.self$.blocks$subterm)
@@ -88,8 +90,7 @@ fmm_factory = methods::setRefClass(Class = "fmm",
 
       # Response
       .self$.y_name = deparse(.self$.specifiers$term_list['lhs'])
-      .self$.y = .self$.components = imbue(.self$.specifiers$term_list['lhs'], 
-					   .self$.data)
+      .self$.y = .self$.components = imbue(.self$.specifiers$term_list['lhs'], .self$.data)
 
       # Column grouping
       .self$.term_width = array(sapply(.self$.blocks$term, ncol))
