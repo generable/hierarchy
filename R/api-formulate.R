@@ -34,6 +34,8 @@ formulate = function(
 
   mm_objs = list()
   for (name in response_names) {
+    if (is.null(configuration[[name]]))
+      configuration[[name]] = list()
     mm_objs[[name]] = hierarchy:::fmm_factory(
       formula = models[[name]], data = data,
       configuration[[name]])
