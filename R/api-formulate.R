@@ -13,8 +13,9 @@
 #' @return list containing 1) the list-format model
 #'         matrix for each formula; 2) the data used 
 #'         to evaluate terms for the matrix model; 
-#'         and 3) the sparse-format model matrix in a
-#'         container object.
+#'         3) the sparse-format model matrix in a
+#'         container object; 4) additional config data used;
+#'         and 4) the list of models supplied
 #'         
 #' @export
 formulate = function(
@@ -55,7 +56,7 @@ formulate = function(
     model_inputs[[name]] =  submodel_inputs
   }
 
-  return(list(inputs = model_inputs, data = data, matrices = mm_objs))
+  return(list(inputs = model_inputs, data = data, matrices = mm_objs, configuration = configuration, models = models))
 }
 
 
