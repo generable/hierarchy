@@ -51,7 +51,7 @@ are returned.}
 
 \item{\code{get_data()}}{Get the data frame used to construct the matrix.}
 
-\item{\code{initialize(formula, data, N = nrow(data), ...)}}{Create the implicit mass matrix and store components.}
+\item{\code{initialize(formula, data, configuration, N = nrow(data), ...)}}{Create the implicit mass matrix and store components.}
 
 \item{\code{list_components()}}{Get a list of the object's fields that can be exposed.}
 }}

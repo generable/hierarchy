@@ -4,7 +4,7 @@
 \alias{formulate}
 \title{Create setting for a model matrix}
 \usage{
-formulate(models = list(), data)
+formulate(models = list(), data, configuration = list())
 }
 \arguments{
 \item{models, }{a list of formulas.  One formula per}
@@ -15,8 +15,9 @@ formulate(models = list(), data)
 list containing 1) the list-format model
         matrix for each formula; 2) the data used 
         to evaluate terms for the matrix model; 
-        and 3) the sparse-format model matrix in a
-        container object.
+        3) the sparse-format model matrix in a
+        container object; 4) additional config data used;
+        and 4) the list of models supplied
 }
 \description{
 Calling this function constructs the (sparse) model
