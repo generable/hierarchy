@@ -71,7 +71,10 @@ fmm_factory = methods::setRefClass(Class = "fmm",
       .self$.data = as.environment(data)
       .self$.configuration = as.environment(configuration)
       .self$.data$N = N
-      .self$.components = imbue(.self$.specifiers$term_list$rhs, .self$.data, .self$.configuration)
+      .self$.components = imbue(
+        terms = .self$.specifiers$term_list$rhs, 
+        data = .self$.data, 
+        configuration = .self$.configuration)
 
       .self$.blocks = list(subterm = expand(.self$.components))
       .self$.blocks[['term']] = combine_subterms(.self$.blocks$subterm)

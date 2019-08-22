@@ -102,6 +102,8 @@ simplify = function(node) {
       call('(', lhs(node)), call('random', rhs(node))
     )))
   } else if (op(node) == '(' || is_fname(op(node))) {
+    if (is_fname(op(node)) && length(node) == 1)
+      return(node)
     for (i in 2:length(node)) {
       node[[i]] = simplify(node[[i]])
     }
@@ -320,23 +322,23 @@ default_imbue_methods = function() list(
     } else {
       x = list(...)
       for (i in seq_along(x)) {
-	if (!is.list(x[[i]]) && is.null(attr(x[[i]], 'type'))) {
+        if (!is.list(x[[i]]) && is.null(attr(x[[i]], 'type'))) {
           x[[i]] = as.character(x[[i]])
           attr(x[[i]], 'type') = 'contrast'
           attr(x[[i]], 'effect_type') = 'fixed'
-	} 
+	      } 
         ith_type = attr(x[[i]], 'type')
         if (!is.null(ith_type) && ith_type != 'contrast')
-	  stop(paste0("Contrast and non-contrast terms can ",
-		     "only be combined using interactions ",
-		     "specified using the ':' operator."))
+	        stop(paste0("Contrast and non-contrast terms can ",
+		       "only be combined using interactions ",
+		       "specified using the ':' operator."))
         else if (is.null(ith_type)) 
-	  attr(x[[i]], 'type') = 'contrast'
+	        attr(x[[i]], 'type') = 'contrast'
         ith_effect_type = attr(x[[i]], 'effect_type')
-	if (!is.null(ith_effect_type) && ith_effect_type != 'fixed')
+	      if (!is.null(ith_effect_type) && ith_effect_type != 'fixed')
           stop(paste("Fixed and random-effect terms can only be ",
-		     "combined using interactions specified with the ",
-		     "':' opeartor."))
+		                 "combined using interactions specified with the ",
+		                 "':' opeartor."))
         else
           attr(x[[i]], 'effect_type') = 'fixed'
       }
@@ -467,6 +469,8 @@ tag_missing = function(x) {
 }
 
 extend_recursive = function(x, N) {
+  if (is.null(N))
+    stop("N must be specified.")
   if (!is.list(x) && length(x) == N)
     return(x)
   if (!is.list(x) && length(dim(x)) == 2 && nrow(x) == N)
@@ -601,28 +605,26 @@ column_powerset = function(x) {
   if (length(x) == 1)
     return(x[[1]])
   k = 0
-  o = Matrix::Matrix(
-    data = as.numeric(rep(NA, ncol(x[[1]]) * ncol(x[[2]]) * nrow(x[[1]]))), 
-    ncol = ncol(x[[1]]) * ncol(x[[2]]), nrow = nrow(x[[1]]),
-    sparse = TRUE)
-  o = as(o, 'dgCMatrix')
+  o = matrix(data=0, nrow = nrow(x[[1]]), ncol = ncol(x[[1]]) * ncol(x[[2]]))
+  #o = Matrix::sparseMatrix(i = vector(), j = vector(), 
+  #  dims = c(nrow = nrow(x[[1]]), ncol = ncol(x[[1]]) * ncol(x[[2]])))
+  #o = as(o, 'dgCMatrix')
   colnames(o) = rep('BAD', ncol(o))
   for (a in 1:ncol(x[[1]])) {
     for (b in 1:ncol(x[[2]])) {
       k = k + 1
-      o[,k] = x[[1]][,a,drop=FALSE] * x[[2]][,b,drop=FALSE]
+      o[,k] = x[[1]][,a] * x[[2]][,b]
       colnames(o)[k] = paste(colnames(x[[1]])[a], 
 			     colnames(x[[2]])[b], sep = '::')
     }
   }
-  x = x[-1]
-  x = x[-1]
+  o = as(o, 'dgCMatrix')
   if (any(colnames(o) == 'BAD'))
     stop("Column names not transferred.")
-  if (length(x) == 0)
+  if (length(x) == 2) {
     return(o)
-  else 
-    return(column_powerset(c(list(o), x)))
+  }
+  return(column_powerset(c(list(o), x[3:length(x)])))
 }
 
   
@@ -634,30 +636,31 @@ has_matrix = function(x) {
     stop("Should only ever be called on a length-1 list.")
   else {
       if (is.matrix(item[[1]]))
-	return(TRUE)
+        return(TRUE)
       else if (class(item[[1]]) == 'dgCMatrix')
         return(TRUE)
       else if (class(item[[1]]) == 'dgeMatrix')
-	return(TRUE)
+	      return(TRUE)
       else
-	return(FALSE)
+	      return(FALSE)
   }
 }
 
 combine_subterms_recursive = function(x) {
   if (is_matrix(x))
     return(x)
+  else if (is.list(x) && length(x) == 1) 
+    return(combine_subterms_recursive(x[[1]]))
   else if (is.list(x) && all(sapply(x, is_matrix)))
     return(column_powerset(x))
   else if (is.list(x)) { 
     for (i in seq_along(x)) {
       if (is_matrix(x[[i]]))
-        next
+        next 
       if (is.list(x[[i]]) && length(x[[i]]) == 1) 
         x[[i]] = x[[i]][[1]]
-      name = names(x)[i]
-      subnames = names(x[[i]])
-      x[[i]] = combine_subterms_recursive(x[[i]])
+      else
+        x[[i]] = combine_subterms_recursive(x[[i]])
     }
   } else {
     stop("Dropped case.")

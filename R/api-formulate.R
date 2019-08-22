@@ -21,7 +21,8 @@
 formulate = function(
   models = list(),
   data,
-  configuration = list()
+  configuration = list(), 
+  auxilliary_data = list()
 ) {
 
   response_names = as.character(sapply(models, hierarchy:::response_name))
@@ -39,24 +40,33 @@ formulate = function(
       configuration[[name]] = list()
     mm_objs[[name]] = hierarchy:::fmm_factory(
       formula = models[[name]], data = data,
-      configuration[[name]])
+      configuration = configuration[[name]])
   }
 
   # These are all the parts we need to pull out from the model matrix
-  expose_components = c("n_nze", "n_col", "start", "stop", "nze", "skips",
+  expose_components = c(
+    "n_nze", "n_col", "n_row", 
+    "start", "stop", "nze", "skips",
     "state_terms", "n_state_terms",
     "constant_terms", "n_constant_terms",
     "coefficient_terms", "n_coefficient_terms",
     "n_re", "re_start", "re_stop", "xv")
 
-  model_inputs = list()
+  stan_inputs = list()
   for (name in response_names) {
     names(expose_components) = paste(name, expose_components, sep='_')
     submodel_inputs = do.call(mm_objs[[name]]$expose, as.list(expose_components))
-    model_inputs[[name]] =  submodel_inputs
+    stan_inputs[[name]] =  submodel_inputs
   }
 
-  return(list(inputs = model_inputs, data = data, matrices = mm_objs, configuration = configuration, models = models))
+  return(list(
+    models = models,
+    data = data, 
+    configuration = configuration, 
+    inputs = stan_inputs, 
+    matrices = mm_objs, 
+    auxilliary_data = auxilliary_data
+  ))
 }
 
 
