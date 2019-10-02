@@ -535,13 +535,15 @@ default_expand_methods = function() list(
   intercept = function(x = NULL) {
     if (!is.factor(x))
       x = factor(x)
-    x = Matrix::t(Matrix::fac2Sparse(x, factorPatt12 = c(FALSE, TRUE))[[2]])
+    x = Matrix::t(Matrix::fac2Sparse(x, drop.unused.levels = FALSE,
+                                        factorPatt12 = c(FALSE, TRUE))[[2]])
     return(x)
   },
   contrast = function(x) {
     if (!is.factor(x))
       x = factor(x)
-    x = Matrix::t(Matrix::fac2Sparse(x, factorPatt12 = c(TRUE, FALSE))[[1]])
+    x = Matrix::t(Matrix::fac2Sparse(x, drop.unused.levels = FALSE,
+                                        factorPatt12 = c(TRUE, FALSE))[[1]])
     return(x)
   },
   constant = function(x) {
@@ -559,7 +561,8 @@ default_expand_methods = function() list(
   random = function(x) {
     if (!is.factor(x))
       x = factor(x)
-    x = Matrix::t(Matrix::fac2Sparse(x, factorPatt12 = c(FALSE, TRUE))[[2]])
+    x = Matrix::t(Matrix::fac2Sparse(x, drop.unused.levels = FALSE,
+                                        factorPatt12 = c(FALSE, TRUE))[[2]])
     return(x)
   } 
 )
