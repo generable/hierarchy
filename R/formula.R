@@ -350,8 +350,8 @@ default_imbue_methods = function() list(
     attr(x, 'effect_type') = 'fixed'
     return(x)
   },
-  radial_b_spline = function(x, k) {
-    x = radial_b_spline(x, k)
+  radial_b_spline = function(x, k, min = min, max = max) {
+    x = radial_b_spline(x, k, min, max)
     attr(x, 'type') = 'spline'
     attr(x, 'effect_type') = 'fixed'
     return(x)
