@@ -607,19 +607,19 @@ column_powerset = function(x) {
     stop("Inputs to 'column_powerset' must all have the same number of rows.")
   if (length(x) == 1)
     return(x[[1]])
-  k = 0
-  o = matrix(data=0, nrow = nrow(x[[1]]), ncol = ncol(x[[1]]) * ncol(x[[2]]))
-  #o = Matrix::sparseMatrix(i = vector(), j = vector(), 
-  #  dims = c(nrow = nrow(x[[1]]), ncol = ncol(x[[1]]) * ncol(x[[2]])))
-  #o = as(o, 'dgCMatrix')
-  colnames(o) = rep('BAD', ncol(o))
-  for (a in 1:ncol(x[[1]])) {
-    for (b in 1:ncol(x[[2]])) {
-      k = k + 1
-      o[,k] = x[[1]][,a] * x[[2]][,b]
-    }
-  }
-  colnames(o) = purrr::map(colnames(x[[1]]), ~ paste0(., '::', colnames(x[[2]]))) %>%
+  nr = nrow(x[[1]])
+  nc_1 = ncol(x[[1]])
+  nc_2 = ncol(x[[2]])
+  o = apply(x[[1]], 2, function(c, m) {
+    m_1 = replicate(ncol(m), c, TRUE)
+    dim(m_1) = dim(m)
+    m_1 = m_1 * m
+    return(m_1)
+  }, m = x[[2]])
+  dim(o) = c(nr, nc_1 * nc_2)
+  cn_a = colnames(x[[1]])
+  cn_b = colnames(x[[2]])
+  colnames(o) = purrr::map(cn_a, ~ paste0(., '::', cn_b)) %>%
     unlist()
   o = as(o, 'dgCMatrix')
   if (any(colnames(o) == 'BAD'))
