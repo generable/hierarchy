@@ -617,10 +617,10 @@ column_powerset = function(x) {
     for (b in 1:ncol(x[[2]])) {
       k = k + 1
       o[,k] = x[[1]][,a] * x[[2]][,b]
-      colnames(o)[k] = paste(colnames(x[[1]])[a], 
-			     colnames(x[[2]])[b], sep = '::')
     }
   }
+  colnames(o) = purrr::map(colnames(x[[1]]), ~ paste0(., '::', colnames(x[[2]]))) %>%
+    unlist()
   o = as(o, 'dgCMatrix')
   if (any(colnames(o) == 'BAD'))
     stop("Column names not transferred.")
