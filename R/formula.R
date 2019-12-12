@@ -610,13 +610,15 @@ column_powerset = function(x) {
   nr = nrow(x[[1]])
   nc_1 = ncol(x[[1]])
   nc_2 = ncol(x[[2]])
-  o = apply(x[[1]], 2, function(c, m) {
-    m_1 = replicate(ncol(m), c, TRUE)
-    dim(m_1) = dim(m)
-    m_1 = m_1 * m
-    return(m_1)
-  }, m = x[[2]])
-  dim(o) = c(nr, nc_1 * nc_2)
+  o = matrix(data=0, nrow = nr, ncol = nc_1 * nc_2)
+  for (a in 1:ncol(x[[1]])) {
+    start = (a - 1) * nc_2 + 1
+    end = start + nc_2 - 1
+    idx = start:end
+    for (b in 1:nc_2) {
+      o[,idx[b]] = x[[1]][,a,FALSE] * x[[2]][,b,FALSE]
+    }
+  }
   cn_a = colnames(x[[1]])
   cn_b = colnames(x[[2]])
   colnames(o) = purrr::map(cn_a, ~ paste0(., '::', cn_b)) %>%
