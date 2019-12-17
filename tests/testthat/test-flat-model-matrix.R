@@ -26,6 +26,7 @@ test_that("test .", {
   f = y ~ x + P_tilde_c + P_tilde_s
   mm = model.matrix(f, data)
   X_vec_mm = t(mm)[t(mm) != 0]
+  skip('flat_mm() is no longer part of hierarchy package; not sure how to test this')
   mml = flat_mm(f, data)
   X_vec_mml = mml[['X_vec']]
 
