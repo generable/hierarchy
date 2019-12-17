@@ -38,6 +38,12 @@ test_that('formulate checks input for correct types', {
                
 })
 
+test_that('formulate checks data for size', {
+  expect_error(hierarchy::formulate(models = list(Y ~ X), 
+                                    data = data.frame()),
+               ".*Must have at least 1 rows.*")
+})
+
 
 test_that('formulate works for a simple model', {
   skip('')

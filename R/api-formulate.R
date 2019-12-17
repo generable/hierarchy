@@ -26,12 +26,15 @@ formulate = function(models = list(),
                      data, 
                      configuration = list(), 
                      auxiliary_data = list()) {
-  checkmate::qassert(data, 'd')
+  checkmate::assert_data_frame(data)
   checkmate::assert_list(models, types = "formula")
   checkmate::assert_list(configuration)
   checkmate::assert_list(auxiliary_data)
   
   response_names = as.character(sapply(models, hierarchy:::lhs))
+  if (length(response_names) > 0)
+    checkmate::assert_data_frame(data, min.rows = 1)
+  
   for (name in response_names) {
     if (name %in% names(data))
       next
