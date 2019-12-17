@@ -7,9 +7,9 @@
 #' matrix in a container object, additioanl configuration data
 #' used, and the list of models supplied.
 #'
-#' @param models a list of formulas. Each formula creates its
+#' @param models a list of \code{formula}s. Each formula creates its
 #'    own model matrix.
-#' @param data data.frame to pull formula terms from.
+#' @param data \code{data.frame} to pull formula terms from.
 #' @param configuration configuration
 #' @param auxiliary_data auxiliary data
 #' @return List representing the model matrix constructed from
@@ -27,6 +27,9 @@ formulate = function(models = list(),
                      configuration = list(), 
                      auxiliary_data = list()) {
   checkmate::qassert(data, 'd')
+  checkmate::assert_list(models, types = "formula")
+  checkmate::assert_list(configuration)
+  checkmate::assert_list(auxiliary_data)
   
   response_names = as.character(sapply(models, hierarchy:::response_name))
   for (name in response_names) {

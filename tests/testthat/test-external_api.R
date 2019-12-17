@@ -30,6 +30,14 @@ test_that('formulate handles empty data object', {
   expect_length(specification$auxiliary_data, 0)
 })
 
+test_that('formulate checks input for correct types', {
+  expect_error(hierarchy::formulate(models = X ~ 1 + treatment_type, data = data.frame()),
+               "Must be of type 'list'.*")
+  expect_error(hierarchy::formulate(models = 123, data = data.frame()),
+               "Must be of type 'list'.*")
+               
+})
+
 
 test_that('formulate works for a simple model', {
   skip('')
