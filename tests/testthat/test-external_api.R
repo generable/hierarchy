@@ -44,6 +44,12 @@ test_that('formulate checks data for size', {
                ".*Must have at least 1 rows.*")
 })
 
+test_that("formulate checks that models don't duplicate lhs", {
+  expect_error(hierarchy::formulate(models = list(Y ~ 1, Y ~ X),
+                                    data = data.frame()),
+               ".*'models \\(lhs\\)'.*Contains duplicated values.*")
+})
+
 
 test_that('formulate works for a simple model', {
   skip('')

@@ -32,6 +32,8 @@ formulate = function(models = list(),
   checkmate::assert_list(auxiliary_data)
   
   response_names = as.character(sapply(models, hierarchy:::lhs))
+  checkmate::assert_vector(response_names, unique = TRUE, 
+                           .var.name = "models (lhs)")
   if (length(response_names) > 0)
     checkmate::assert_data_frame(data, min.rows = 1)
   
