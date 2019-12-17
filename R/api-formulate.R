@@ -31,7 +31,7 @@ formulate = function(models = list(),
   checkmate::assert_list(configuration)
   checkmate::assert_list(auxiliary_data)
   
-  response_names = as.character(sapply(models, hierarchy:::response_name))
+  response_names = as.character(sapply(models, hierarchy:::lhs))
   for (name in response_names) {
     if (name %in% names(data))
       next
