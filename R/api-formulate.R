@@ -1,30 +1,32 @@
-
-
-
-#' Create setting for a model matrix
+#' Constructs a list containing the model matrix for the formulas,
+#' data, and configurations provided.
+#' 
+#' \code{formulate} constructs the model matrix as a list-format
+#' model matrix per formula, the data used to evaluate the
+#' terms for the model matrix, the model matrix as a sparse
+#' matrix in a container object, additioanl configuration data
+#' used, and the list of models supplied.
 #'
-#' Calling this function constructs the (sparse) model
-#' matrices for all models and combines the data
-#' into a single list with all necessary prefixes.  
-#'
-#' @param models, a list of formulas.  One formula per
-#"        model matrix to create.
+#' @param models, a list of formulas. Each formula creates its
+#'    own model matrix.
 #' @param data data.frame to pull formula terms from.
-#' @return list containing 1) the list-format model
-#'         matrix for each formula; 2) the data used 
-#'         to evaluate terms for the matrix model; 
-#'         3) the sparse-format model matrix in a
-#'         container object; 4) additional config data used;
-#'         and 4) the list of models supplied
+#' @param configuration
+#' @param auxiliary_data
+#' @return List representing the model matrix constructed from
+#'    the parameters. The list contains:
+#'    1. the list-format model matrix for each formula
+#'    2. the data used to evaluate the terms of the model matrix
+#'    3. the sparse-format model matrix in a container
+#'    4. any additional configuration data used
+#'    5. the list of models supplied
 #'         
 #' @export
 formulate = function(
   models = list(),
   data,
   configuration = list(), 
-  auxilliary_data = list()
+  auxiliary_data = list()
 ) {
-
   response_names = as.character(sapply(models, hierarchy:::response_name))
   for (name in response_names) {
     if (name %in% names(data))
@@ -66,7 +68,7 @@ formulate = function(
     configuration = configuration, 
     inputs = stan_inputs, 
     matrices = mm_objs, 
-    auxilliary_data = auxilliary_data
+    auxiliary_data = auxiliary_data
   ))
 }
 
