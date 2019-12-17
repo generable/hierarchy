@@ -8,6 +8,7 @@ Description: A user-facing package for handling hierarchical models.
 BugReports: https://github.com/sakrejda/hierarchy/issues
 License: GPL-3
 Imports:
+    checkmate,
     lubridate,
     Matrix,
     MatrixModels

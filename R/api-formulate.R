@@ -7,26 +7,27 @@
 #' matrix in a container object, additioanl configuration data
 #' used, and the list of models supplied.
 #'
-#' @param models, a list of formulas. Each formula creates its
+#' @param models a list of formulas. Each formula creates its
 #'    own model matrix.
 #' @param data data.frame to pull formula terms from.
-#' @param configuration
-#' @param auxiliary_data
+#' @param configuration configuration
+#' @param auxiliary_data auxiliary data
 #' @return List representing the model matrix constructed from
-#'    the parameters. The list contains:
-#'    1. the list-format model matrix for each formula
-#'    2. the data used to evaluate the terms of the model matrix
-#'    3. the sparse-format model matrix in a container
-#'    4. any additional configuration data used
-#'    5. the list of models supplied
+#'    the parameters. The named list contains:
+#'    1. \code{models}: the list of models supplied
+#'    2. \code{data}: the data used to evaluate the terms of the model matrix
+#'    3. \code{configuration}: any additional configuration data used
+#'    4. \code{inputs}: the sparse-format model matrix as stan-formatted input
+#'    5. \code{matrices}: the list-format model matrix for each formula
+#'    6. \code{auxiliary_data}: any auxiliary data used
 #'         
 #' @export
-formulate = function(
-  models = list(),
-  data,
-  configuration = list(), 
-  auxiliary_data = list()
-) {
+formulate = function(models = list(), 
+                     data, 
+                     configuration = list(), 
+                     auxiliary_data = list()) {
+  checkmate::qassert(data, 'd')
+  
   response_names = as.character(sapply(models, hierarchy:::response_name))
   for (name in response_names) {
     if (name %in% names(data))

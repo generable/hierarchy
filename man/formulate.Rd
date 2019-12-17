@@ -2,30 +2,40 @@
 % Please edit documentation in R/api-formulate.R
 \name{formulate}
 \alias{formulate}
-\title{Create setting for a model matrix}
+\title{Constructs a list containing the model matrix for the formulas,
+data, and configurations provided.}
 \usage{
 formulate(
   models = list(),
   data,
   configuration = list(),
-  auxilliary_data = list()
+  auxiliary_data = list()
 )
 }
 \arguments{
-\item{models, }{a list of formulas.  One formula per}
+\item{models}{a list of formulas. Each formula creates its
+own model matrix.}
 
 \item{data}{data.frame to pull formula terms from.}
+
+\item{configuration}{configuration}
+
+\item{auxiliary_data}{auxiliary data}
 }
 \value{
-list containing 1) the list-format model
-        matrix for each formula; 2) the data used 
-        to evaluate terms for the matrix model; 
-        3) the sparse-format model matrix in a
-        container object; 4) additional config data used;
-        and 4) the list of models supplied
+List representing the model matrix constructed from
+   the parameters. The named list contains:
+   1. \code{models}: the list of models supplied
+   2. \code{data}: the data used to evaluate the terms of the model matrix
+   3. \code{configuration}: any additional configuration data used
+   4. \code{inputs}: the sparse-format model matrix as stan-formatted input
+   5. \code{matrices}: the list-format model matrix for each formula
+   6. \code{auxiliary_data}: any auxiliary data used
 }
 \description{
-Calling this function constructs the (sparse) model
-matrices for all models and combines the data
-into a single list with all necessary prefixes.
+\code{formulate} constructs the model matrix as a list-format
+model matrix per formula, the data used to evaluate the
+terms for the model matrix, the model matrix as a sparse
+matrix in a container object, additioanl configuration data
+used, and the list of models supplied.
 }
