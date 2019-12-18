@@ -37,20 +37,15 @@ formulate = function(models = list(),
   if (length(response_names) > 0)
     checkmate::assert_data_frame(data, min.rows = 1)
   
-  for (name in response_names) {
-    if (name %in% names(data))
-      next
-    else
-      data[[name]] = 1
-  }
   names(models) = response_names
-
+  data = hierarchy:::setup_data(data, response_names)
+  configuration = hierarchy:::setup_configuration(configuration, response_names)
+  
   mm_objs = list()
   for (name in response_names) {
-    if (is.null(configuration[[name]]))
-      configuration[[name]] = list()
     mm_objs[[name]] = hierarchy:::fmm_factory(
-      formula = models[[name]], data = data,
+      formula = models[[name]], 
+      data = data,
       configuration = configuration[[name]])
   }
 
@@ -81,5 +76,42 @@ formulate = function(models = list(),
   ))
 }
 
+#' Setup data for \code{formulate}.
+#' 
+#' For each name in \code{response_names}, it will either
+#' find a column with that name or add a new column filled
+#' with 1s.
+#'
+#' @param data \code{data.frame} with at least one row of data
+#' @param response_names \code{vector} of characters that need
+#'    to be found in the data frame.
+#'
+#' @return \code{data.frame} where each \code{response_name} is
+#'    found as a column
+setup_data = function(data, response_names) {
+  for (name in response_names) {
+    if (!(name %in% names(data)))
+      data[[name]] = 1
+  }
+  return(data)
+}
 
-
+#' Setup configuration list for \code{formulate}.
+#' 
+#' For each name in \code{response_names}, it will either
+#' find the configuration inside the list or it will put
+#' an empty list there.
+#'
+#' @param configuration named \code{list}
+#' @param response_names \code{vector} of characters that need
+#'    to be found in the data frame.
+#'
+#' @return named \code{list} where each response_name either
+#'    contains a configuration that's not NULL or an empty list.
+setup_configuration = function(configuration, response_names) {
+  for (name in response_names) {
+    if (is.null(configuration[[name]]))
+      configuration[[name]] = list()
+  }
+  return(configuration)  
+}

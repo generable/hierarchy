@@ -44,10 +44,44 @@ test_that('formulate checks data for size', {
                ".*Must have at least 1 rows.*")
 })
 
-test_that("formulate checks that models don't duplicate lhs", {
+test_that('formulate checks that models do not duplicate lhs', {
   expect_error(hierarchy::formulate(models = list(Y ~ 1, Y ~ X),
                                     data = data.frame()),
                ".*'models \\(lhs\\)'.*Contains duplicated values.*")
+})
+
+test_that('setup_data handles names properly', {
+  df = data.frame(X = 0)
+  
+  data = hierarchy:::setup_data(df, c("X"))
+  expect_identical(data, df)
+  
+  
+  data = hierarchy:::setup_data(df, c("Y"))
+  expect_identical(data, data.frame(X = 0, Y = 1))
+  
+  data = hierarchy:::setup_data(df, c("X", "Y"))
+  expect_identical(data, data.frame(X = 0, Y = 1))
+  
+  data = hierarchy:::setup_data(df, c("X", "Z", "Y"))
+  expect_identical(data, data.frame(X = 0, Z = 1, Y = 1))
+})
+
+test_that('setup_configuration handles names properly', {
+  config = list(X = list())
+  configuration = hierarchy:::setup_configuration(config, c("X"))
+  expect_identical(configuration, config)
+  
+  # test that X gets replaced
+  configuration = hierarchy:::setup_configuration(list(X = NULL), c("X"))
+  expect_identical(configuration, list(X = list()))
+
+  # test that X stays the same
+  configuration = hierarchy:::setup_configuration(list(X = 'foo'), c("X"))
+  expect_identical(configuration, list(X = 'foo'))
+  
+  configuration = hierarchy:::setup_configuration(list(X = NULL), c("X", "Y"))
+  expect_identical(configuration, list(X = list(), Y = list()))
 })
 
 
