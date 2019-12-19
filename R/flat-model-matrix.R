@@ -31,6 +31,7 @@ fmm_factory = methods::setRefClass(Class = "fmm",
     .col_start = "array",
     .col_stop = "array",
     .col_nze = "array",
+    .col_xv_nze = "array",
     .xv = "numeric",
     .y_name = "character",
     .y = "list",
@@ -100,6 +101,7 @@ fmm_factory = methods::setRefClass(Class = "fmm",
       .self$.xv = .model$list$xv
       .self$.col_n_nze = .model$list$col_n_nze
       .self$.col_nze = array(.model$list$col_nze)
+      .self$.col_xv_nze = array(.model$list$col_xv_nze)
       .self$.col_skips = array(.model$list$col_skip)
       .self$.col_start = array(.model$list$col_start)
       .self$.col_stop = array(.model$list$col_stop)

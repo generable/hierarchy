@@ -49,15 +49,23 @@ get_nzv = function(m) {
 
 #' Turn a row-wize nze into a col-wise NZE and vice-versa.
 #'
-flip_nze = function(nze, n) {
+flip_nze = function(nze, n, space = "row") {
+  if (space == "column")
+    return(nze)
   o = vector('list', n)
+  nze_idx = 0
   for (i in seq_along(nze)) {
     for (j in seq_along(nze[[i]])) {
+      nze_idx = nze_idx + 1
       idx = nze[[i]][[j]]
       if (length(o) < idx) {
         o = c(o, vector('list', idx - length(o)))
       }
-      o[[idx]] = c(o[[idx]], i)
+      if (space == "row") {
+        o[[idx]] = c(o[[idx]], i)
+      } else if (space == "nze") {
+        o[[idx]] = c(o[[idx]], nze_idx)
+      }
     }
   }
   return(o)
@@ -73,6 +81,7 @@ m_as_list = function(m) {
   row_nze = get_nze(m, compression = "row")
   row_sss = get_start_stop_skip(row_nze)
   col_nze = flip_nze(row_nze, ncol(m))
+  col_xv_nze = flip_nze(row_nze, ncol(m), space = "nze")
   row_nze = unlist(row_nze)
   row_nzv = get_nzv(m)
   col_sss = get_start_stop_skip(col_nze)
@@ -88,6 +97,7 @@ m_as_list = function(m) {
     xv = row_nzv,
     col_n_nze = length(col_nze),
     col_nze = col_nze,
+    col_xv_nze = unlist(col_xv_nze),
     col_skip = col_sss[['skip']],
     col_start = col_sss[['start']],
     col_stop = col_sss[['stop']]
