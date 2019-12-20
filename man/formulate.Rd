@@ -13,10 +13,10 @@ formulate(
 )
 }
 \arguments{
-\item{models}{a list of formulas. Each formula creates its
+\item{models}{a list of \code{formula}s. Each formula creates its
 own model matrix.}
 
-\item{data}{data.frame to pull formula terms from.}
+\item{data}{\code{data.frame} to pull formula terms from.}
 
 \item{configuration}{configuration}
 
