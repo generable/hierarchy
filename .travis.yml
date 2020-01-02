@@ -5,18 +5,15 @@ r:
   - oldrel
   - release
   - devel
-#cache: packages
+cache: packages
 repos:
   CRAN: https://cloud.r-project.org
   ropensci: http://packages.ropensci.org
-#r_github_packages:
-#  - r-lib/covr
-r_packages:
-  - devtools
-  - testthat
-install:
-  - R -e 'devtools::install_deps(dependencies = T, upgrade = "always")'
-  - R -e 'devtools::install_local(upgrade = "always")'
-
+r_github_packages:
+  - r-lib/covr
+  - r-lib/devtools
+  - r-lib/testthat
 script:
+  - R -e 'devtools::install_deps(dependencies = T, upgrade = "always")'
+  - R -e 'devtools::install_local(force = T, upgrade = "always")'
   - R -e 'devtools::test()'
