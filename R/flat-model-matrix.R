@@ -1,5 +1,4 @@
-#' A class for creating a flat sparse model matrix
-#' representation
+#' A Reference Class to represent a flat sparse model matrix.
 #'
 #' @field .n_row number of observations in model matrix
 #' @field .n_col number of columns in the model matrix
@@ -67,7 +66,13 @@ fmm_factory = methods::setRefClass(Class = "fmm",
   ),
   methods = list(
     initialize = function(formula, data, configuration, N = nrow(data), ...) {
-      "Create the implicit mass matrix and store components."
+      "Create the implicit mass matrix and store components.
+      
+      @param formula
+      
+      @param data data that has the lhs of the formula as one of the columns
+      
+      @param configuration a configuration object"
       .self$.specifiers = list(
         original = formula,
         simple = simplify(formula),
@@ -238,7 +243,7 @@ fmm_factory = methods::setRefClass(Class = "fmm",
     },
     get_matrix = function(flat=FALSE) {
       if (flat)
-        return(.sefl$.model$list)
+        return(.self$.model$list)
       else
         return(.self$.model$matrix)
     }

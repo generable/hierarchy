@@ -8,12 +8,13 @@ Description: A user-facing package for handling hierarchical models.
 BugReports: https://github.com/sakrejda/hierarchy/issues
 License: GPL-3
 Imports:
+    checkmate,
     lubridate,
     Matrix,
     MatrixModels,
     checkmate
 VignetteBuilder: knitr
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 Suggests: 
     testthat,
     magrittr

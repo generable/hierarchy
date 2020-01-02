@@ -1,3 +1,12 @@
+#' hierarchy: A package for creating sensible hierarchical data structures!
+#' 
+#' The hierarchy package provides ways to take flat data from csv files to
+#' a model matrix that has the right data structure for use in hierarchical models.
+#' 
+#' @docType package
+#' @name hierarchy
+NULL
+
 
 #' A class for indexing a hierarchy in a model
 #'

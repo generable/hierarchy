@@ -6,7 +6,6 @@ op = function(x) x[[1]]
 lhs = function(x) x[[2]]
 arg = function(x) lhs(x)
 rhs = function(x) x[[3]]
-response_name = function(x) if (is_formula(x)) lhs(x) else NULL
 
 func = function(x) rlang::node_car(x)
 args = function(x) rlang::node_cdr(x)

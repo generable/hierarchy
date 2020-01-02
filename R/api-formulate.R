@@ -1,45 +1,51 @@
-
-
-
-#' Create setting for a model matrix
+#' Constructs a list containing the model matrix for the formulas,
+#' data, and configurations provided.
+#' 
+#' \code{formulate} constructs the model matrix as a list-format
+#' model matrix per formula, the data used to evaluate the
+#' terms for the model matrix, the model matrix as a sparse
+#' matrix in a container object, additioanl configuration data
+#' used, and the list of models supplied.
 #'
-#' Calling this function constructs the (sparse) model
-#' matrices for all models and combines the data
-#' into a single list with all necessary prefixes.  
-#'
-#' @param models, a list of formulas.  One formula per
-#"        model matrix to create.
-#' @param data data.frame to pull formula terms from.
-#' @return list containing 1) the list-format model
-#'         matrix for each formula; 2) the data used 
-#'         to evaluate terms for the matrix model; 
-#'         3) the sparse-format model matrix in a
-#'         container object; 4) additional config data used;
-#'         and 4) the list of models supplied
+#' @param models a list of \code{formula}s. Each formula creates its
+#'    own model matrix.
+#' @param data \code{data.frame} to pull formula terms from.
+#' @param configuration configuration
+#' @param auxiliary_data auxiliary data
+#' @return List representing the model matrix constructed from
+#'    the parameters. The named list contains:
+#'    1. \code{models}: the list of models supplied
+#'    2. \code{data}: the data used to evaluate the terms of the model matrix
+#'    3. \code{configuration}: any additional configuration data used
+#'    4. \code{inputs}: the sparse-format model matrix as stan-formatted input
+#'    5. \code{matrices}: the list-format model matrix for each formula
+#'    6. \code{auxiliary_data}: any auxiliary data used
 #'         
 #' @export
-formulate = function(
-  models = list(),
-  data,
-  configuration = list(), 
-  auxilliary_data = list()
-) {
-
-  response_names = as.character(sapply(models, hierarchy:::response_name))
-  for (name in response_names) {
-    if (name %in% names(data))
-      next
-    else
-      data[[name]] = 1
-  }
+formulate = function(models = list(), 
+                     data, 
+                     configuration = list(), 
+                     auxiliary_data = list()) {
+  checkmate::assert_data_frame(data)
+  checkmate::assert_list(models, types = "formula")
+  checkmate::assert_list(configuration)
+  checkmate::assert_list(auxiliary_data)
+  
+  response_names = as.character(sapply(models, hierarchy:::lhs))
+  checkmate::assert_vector(response_names, unique = TRUE, 
+                           .var.name = "models (lhs)")
+  if (length(response_names) > 0)
+    checkmate::assert_data_frame(data, min.rows = 1)
+  
   names(models) = response_names
-
+  data = hierarchy:::setup_data(data, response_names)
+  configuration = hierarchy:::setup_configuration(configuration, response_names)
+  
   mm_objs = list()
   for (name in response_names) {
-    if (is.null(configuration[[name]]))
-      configuration[[name]] = list()
     mm_objs[[name]] = hierarchy:::fmm_factory(
-      formula = models[[name]], data = data,
+      formula = models[[name]], 
+      data = data,
       configuration = configuration[[name]])
   }
 
@@ -66,9 +72,46 @@ formulate = function(
     configuration = configuration, 
     inputs = stan_inputs, 
     matrices = mm_objs, 
-    auxilliary_data = auxilliary_data
+    auxiliary_data = auxiliary_data
   ))
 }
 
+#' Setup data for \code{formulate}.
+#' 
+#' For each name in \code{response_names}, it will either
+#' find a column with that name or add a new column filled
+#' with 1s.
+#'
+#' @param data \code{data.frame} with at least one row of data
+#' @param response_names \code{vector} of characters that need
+#'    to be found in the data frame.
+#'
+#' @return \code{data.frame} where each \code{response_name} is
+#'    found as a column
+setup_data = function(data, response_names) {
+  for (name in response_names) {
+    if (!(name %in% names(data)))
+      data[[name]] = 1
+  }
+  return(data)
+}
 
-
+#' Setup configuration list for \code{formulate}.
+#' 
+#' For each name in \code{response_names}, it will either
+#' find the configuration inside the list or it will put
+#' an empty list there.
+#'
+#' @param configuration named \code{list}
+#' @param response_names \code{vector} of characters that need
+#'    to be found in the data frame.
+#'
+#' @return named \code{list} where each response_name either
+#'    contains a configuration that's not NULL or an empty list.
+setup_configuration = function(configuration, response_names) {
+  for (name in response_names) {
+    if (is.null(configuration[[name]]))
+      configuration[[name]] = list()
+  }
+  return(configuration)  
+}

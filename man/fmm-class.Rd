@@ -4,11 +4,9 @@
 \name{fmm-class}
 \alias{fmm-class}
 \alias{fmm_factory}
-\title{A class for creating a flat sparse model matrix
-representation}
+\title{A Reference Class to represent a flat sparse model matrix.}
 \description{
-A class for creating a flat sparse model matrix
-representation
+A Reference Class to represent a flat sparse model matrix.
 }
 \section{Fields}{
 
@@ -51,7 +49,13 @@ are returned.}
 
 \item{\code{get_data()}}{Get the data frame used to construct the matrix.}
 
-\item{\code{initialize(formula, data, configuration, N = nrow(data), ...)}}{Create the implicit mass matrix and store components.}
+\item{\code{initialize(formula, data, configuration, N = nrow(data), ...)}}{Create the implicit mass matrix and store components.
+
+@param formula
+
+@param data data that has the lhs of the formula as one of the columns
+
+@param configuration a configuration object}
 
 \item{\code{list_components()}}{Get a list of the object's fields that can be exposed.}
 }}
