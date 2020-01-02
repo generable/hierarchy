@@ -1,0 +1,18 @@
+# R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
+
+language: r
+r:
+  - oldrel
+  - release
+  - devel
+cache: packages
+repos:
+  CRAN: https://cloud.r-project.org
+  ropensci: http://packages.ropensci.org
+install:
+  - R -e 'devtools::install_deps(dep = T)'
+  - R CMD build .
+  - R CMD install *tar.gz
+
+script:
+  - R -e 'devtools::test()'
