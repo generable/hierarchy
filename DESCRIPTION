@@ -1,7 +1,7 @@
 Package: hierarchy
 Type: Package
 Title: Package for handling inputs to hierarchical models.
-Version: 0.0.1
+Version: 0.0.1.9000
 Date: 2018-08-30
 Authors@R: person("Krzysztof", "Sakrejda", email = "sakrejda@umass.edu", role = c("cre", "aut"))
 Description: A user-facing package for handling hierarchical models.
