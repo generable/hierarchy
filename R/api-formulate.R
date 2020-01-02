@@ -47,7 +47,8 @@ formulate = function(
   expose_components = c(
     "n_nze", "n_col", "n_row", 
     "start", "stop", "nze", "skips",
-    "state_terms", "n_state_terms",
+    "col_start", "col_stop", "col_skips", "col_nze", "col_xv_nze", "col_n_nze",
+    "state_terms", "n_state_terms", "state_start", "state_stop",
     "constant_terms", "n_constant_terms",
     "coefficient_terms", "n_coefficient_terms",
     "n_re", "re_start", "re_stop", "xv")

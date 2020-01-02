@@ -350,8 +350,8 @@ default_imbue_methods = function() list(
     attr(x, 'effect_type') = 'fixed'
     return(x)
   },
-  radial_b_spline = function(x, k) {
-    x = radial_b_spline(x, k)
+  radial_b_spline = function(x, k, min = min, max = max) {
+    x = radial_b_spline(x, k, min, max)
     attr(x, 'type') = 'spline'
     attr(x, 'effect_type') = 'fixed'
     return(x)
@@ -535,13 +535,15 @@ default_expand_methods = function() list(
   intercept = function(x = NULL) {
     if (!is.factor(x))
       x = factor(x)
-    x = Matrix::t(Matrix::fac2Sparse(x, factorPatt12 = c(FALSE, TRUE))[[2]])
+    x = Matrix::t(Matrix::fac2Sparse(x, drop.unused.levels = FALSE,
+                                        factorPatt12 = c(FALSE, TRUE))[[2]])
     return(x)
   },
   contrast = function(x) {
     if (!is.factor(x))
       x = factor(x)
-    x = Matrix::t(Matrix::fac2Sparse(x, factorPatt12 = c(TRUE, FALSE))[[1]])
+    x = Matrix::t(Matrix::fac2Sparse(x, drop.unused.levels = FALSE,
+                                        factorPatt12 = c(TRUE, FALSE))[[1]])
     return(x)
   },
   constant = function(x) {
@@ -559,7 +561,8 @@ default_expand_methods = function() list(
   random = function(x) {
     if (!is.factor(x))
       x = factor(x)
-    x = Matrix::t(Matrix::fac2Sparse(x, factorPatt12 = c(FALSE, TRUE))[[2]])
+    x = Matrix::t(Matrix::fac2Sparse(x, drop.unused.levels = FALSE,
+                                        factorPatt12 = c(FALSE, TRUE))[[2]])
     return(x)
   } 
 )
@@ -604,20 +607,22 @@ column_powerset = function(x) {
     stop("Inputs to 'column_powerset' must all have the same number of rows.")
   if (length(x) == 1)
     return(x[[1]])
-  k = 0
-  o = matrix(data=0, nrow = nrow(x[[1]]), ncol = ncol(x[[1]]) * ncol(x[[2]]))
-  #o = Matrix::sparseMatrix(i = vector(), j = vector(), 
-  #  dims = c(nrow = nrow(x[[1]]), ncol = ncol(x[[1]]) * ncol(x[[2]])))
-  #o = as(o, 'dgCMatrix')
-  colnames(o) = rep('BAD', ncol(o))
+  nr = nrow(x[[1]])
+  nc_1 = ncol(x[[1]])
+  nc_2 = ncol(x[[2]])
+  o = matrix(data=0, nrow = nr, ncol = nc_1 * nc_2)
   for (a in 1:ncol(x[[1]])) {
-    for (b in 1:ncol(x[[2]])) {
-      k = k + 1
-      o[,k] = x[[1]][,a] * x[[2]][,b]
-      colnames(o)[k] = paste(colnames(x[[1]])[a], 
-			     colnames(x[[2]])[b], sep = '::')
+    start = (a - 1) * nc_2 + 1
+    end = start + nc_2 - 1
+    idx = start:end
+    for (b in 1:nc_2) {
+      o[,idx[b]] = x[[1]][,a,FALSE] * x[[2]][,b,FALSE]
     }
   }
+  cn_a = colnames(x[[1]])
+  cn_b = colnames(x[[2]])
+  colnames(o) = purrr::map(cn_a, ~ paste0(., '::', cn_b)) %>%
+    unlist()
   o = as(o, 'dgCMatrix')
   if (any(colnames(o) == 'BAD'))
     stop("Column names not transferred.")

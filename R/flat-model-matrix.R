@@ -26,6 +26,12 @@ fmm_factory = methods::setRefClass(Class = "fmm",
     .skips = "array",
     .start = "array",
     .stop = "array",
+    .col_n_nze = "numeric",
+    .col_skips = "array",
+    .col_start = "array",
+    .col_stop = "array",
+    .col_nze = "array",
+    .col_xv_nze = "array",
     .xv = "numeric",
     .y_name = "character",
     .y = "list",
@@ -53,6 +59,9 @@ fmm_factory = methods::setRefClass(Class = "fmm",
     .n_re_effects = "numeric",
     .re_start = "array",
     .re_stop = "array",
+    .state_names = "character",
+    .state_start = "array",
+    .state_stop = "array",
     .data = "environment",
     .configuration = "environment"
   ),
@@ -86,10 +95,17 @@ fmm_factory = methods::setRefClass(Class = "fmm",
       .self$.n_col = ncol(.model$matrix)
       .self$.n_nze = .model$list$n_nze
       .self$.nze = array(.model$list$nze)
-      .self$.skips = array(.model$list$skips)
+      .self$.skips = array(.model$list$skip)
       .self$.start = array(.model$list$start)
       .self$.stop = array(.model$list$stop)
       .self$.xv = .model$list$xv
+      .self$.col_n_nze = .model$list$col_n_nze
+      .self$.col_nze = array(.model$list$col_nze)
+      .self$.col_xv_nze = array(.model$list$col_xv_nze)
+      .self$.col_skips = array(.model$list$col_skip)
+      .self$.col_start = array(.model$list$col_start)
+      .self$.col_stop = array(.model$list$col_stop)
+      .self$.col_stop = array(.model$list$col_stop)
 
       # Response
       .self$.y_name = deparse(.self$.specifiers$term_list['lhs'])
@@ -129,6 +145,11 @@ fmm_factory = methods::setRefClass(Class = "fmm",
       .self$.n_re = length(.self$.random_terms)
       .self$.re_start = array(.self$.term_start[.self$.random_terms])
       .self$.re_stop = array(.self$.term_stop[.self$.random_terms])
+
+      # state indexing.
+      .self$.state_names = .self$.term_names[.self$.state_terms]
+      .self$.state_start = array(.self$.term_start[.self$.state_terms])
+      .self$.state_stop = array(.self$.term_stop[.self$.state_terms])
     },
     expose = function(...) {
       "Extractor that takes a named vector and provides the relevant
