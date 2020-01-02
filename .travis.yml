@@ -9,10 +9,11 @@ cache: packages
 repos:
   CRAN: https://cloud.r-project.org
   ropensci: http://packages.ropensci.org
+r_packages:
+  - devtools
 install:
-  - R -e 'devtools::install_deps(dep = T)'
-  - R CMD build .
-  - R CMD install *tar.gz
+  - R -e 'devtools::install_deps(dependencies = T, upgrade = "always")'
+  - R -e 'devtools::install_local(force = T, upgrade = "never")'
 
 script:
   - R -e 'devtools::test()'
