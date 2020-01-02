@@ -7,8 +7,8 @@ test_that('fmm_factory creates the model matrix properly', {
   data = data.frame(Y = 1)
   configuration = list()
   
-  
-  expect_success(hierarchy::fmm_factory(formula, data, configuration))
+  mm <- hierarchy::fmm_factory(formula, data, configuration)
+  expect_is(mm, 'fmm')
 })
 
 
