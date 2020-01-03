@@ -112,3 +112,13 @@ test_that("simple intercept plus spline-contrast interaction model is correctly 
   expect_equivalent(Matrix::rowSums(mm), row_sums)
 })
 
+test_that("simple intercept + covariate model is correctly constructed", {
+  library(hierarchy)
+  formula = X ~ 1 + covariate(zerg)
+  data = data.frame(X = 2, zerg = rnorm(26), treatment_type = letters)
+  configuration = list()
+  fmm = fmm_factory(formula, data, configuration)
+  mm = fmm$.model$matrix
+  expect_equal(mm[,'intercept'], rep(1, nrow(mm)))
+  expect_equal(mm[,'zerg'], data$zerg)
+})

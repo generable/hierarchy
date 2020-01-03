@@ -310,11 +310,6 @@ default_imbue_methods = function() list(
     }
     return(x)
   },
-  constant = function(x) {
-    attr(x, 'type') = 'constant'
-    attr(x, 'effect_type') = 'fixed'
-    return(x)
-  },
   contrast = function(...) {
     if (list(...) == list()) {
       return(NULL)
@@ -343,28 +338,6 @@ default_imbue_methods = function() list(
       }
     }
     return(x)
-  },
-  covariate = function(x) {
-    attr(x, 'type') = 'covariate'
-    attr(x, 'effect_type') = 'fixed'
-    return(x)
-  },
-  radial_b_spline = function(x, k, min = min, max = max) {
-    tn = deparse(substitute(x))
-    if (k <= 3) 
-      stop("Spline parameter 'k' must be greater than 3.")
-    x = radial_b_spline(x, k, min, max)
-    colnames(x) = paste0(tn, '-', 1:ncol(x))
-    attr(x, 'type') = 'spline'
-    attr(x, 'effect_type') = 'fixed'
-    return(x)
-  },
-  state = function(x) {
-    x = 1
-    attr(x, 'type') = 'covariate'
-    attr(x, 'effect_type') = 'fixed'
-    attr(x, 'model') = 'state'
-    return(x) 
   },
   random = function(...) {
     if (missing(...)) {
@@ -437,6 +410,43 @@ default_imbue_methods = function() list(
     }
     return(x)
   },
+  constant = function(x) {
+    tn = deparse(substitute(x))
+    x = matrix(data = x, nrow = 1, ncol = 1)
+    colnames(x) = tn
+    attr(x, 'name') = tn
+    attr(x, 'type') = 'constant'
+    attr(x, 'effect_type') = 'fixed'
+    return(x)
+  },
+  covariate = function(x) {
+    tn = deparse(substitute(x))
+    x = matrix(data = x, nrow = 1, ncol = 1)
+    colnames(x) = tn
+    attr(x, 'name') = tn
+    attr(x, 'type') = 'covariate'
+    attr(x, 'effect_type') = 'fixed'
+    return(x)
+  },
+  radial_b_spline = function(x, k, min = min, max = max) {
+    tn = deparse(substitute(x))
+    if (k <= 3) 
+      stop("Spline parameter 'k' must be greater than 3.")
+    x = radial_b_spline(x, k, min, max)
+    colnames(x) = paste0(tn, '-', 1:ncol(x))
+    attr(x, 'type') = 'spline'
+    attr(x, 'effect_type') = 'fixed'
+    return(x)
+  },
+  state = function(x) {
+    tn = deparse(substitute(x))
+    x = 1
+    attr(x, 'name') = tn
+    attr(x, 'type') = 'covariate'
+    attr(x, 'effect_type') = 'fixed'
+    attr(x, 'model') = 'state'
+    return(x) 
+  },
   term = function(...) {
     if (missing(...))
       return(NULL)
@@ -476,11 +486,18 @@ extend_recursive = function(x, N) {
     stop("N must be specified.")
   if (!is.list(x) && length(x) == N)
     return(x)
-  if (!is.list(x) && length(dim(x)) == 2 && nrow(x) == N)
+  if (!is.list(x) && length(dim(x)) == 2 && nrow(x) == N) {
     return(x)
-  else if (!is.list(x) && length(x) != 1)
+  } else if (!is.list(x) && length(dim(x)) == 2 && nrow(x) == 1) {
+    rownames(x) = NULL
+    at = attributes(x)
+    at$dim = c(N, at$dim[2])
+    x = do.call(rbind, args = replicate(N, x, FALSE))
+    attributes(x) = at
+    return(x) 
+  } else if (!is.list(x) && length(x) != 1) {
     stop(paste("Data length must be 1 or ", N))
-  else if (!is.list(x)) {
+  } else if (!is.list(x)) {
     at = attributes(x)
     x = rep(x, N)
     attributes(x) = at
