@@ -412,7 +412,7 @@ default_imbue_methods = function() list(
   },
   constant = function(x) {
     tn = deparse(substitute(x))
-    x = matrix(data = x, nrow = 1, ncol = 1)
+    x = matrix(data = x, nrow = length(x), ncol = 1)
     colnames(x) = tn
     attr(x, 'name') = tn
     attr(x, 'type') = 'constant'
@@ -421,7 +421,7 @@ default_imbue_methods = function() list(
   },
   covariate = function(x) {
     tn = deparse(substitute(x))
-    x = matrix(data = x, nrow = 1, ncol = 1)
+    x = matrix(data = x, nrow = length(x), ncol = 1)
     colnames(x) = tn
     attr(x, 'name') = tn
     attr(x, 'type') = 'covariate'
@@ -440,7 +440,8 @@ default_imbue_methods = function() list(
   },
   state = function(x) {
     tn = deparse(substitute(x))
-    x = 1
+    x = matrix(data = 1, nrow = 1, ncol = 1)
+    colnames(x) = tn
     attr(x, 'name') = tn
     attr(x, 'type') = 'covariate'
     attr(x, 'effect_type') = 'fixed'
@@ -575,7 +576,10 @@ default_expand_methods = function() list(
     return(x)
   },
   covariate = function(x) {
-    x = Matrix::Matrix(data = x, ncol = 1)
+    if (is.matrix(x))
+      x = Matrix::Matrix(data = x)
+    else 
+      x = Matrix::Matrix(data = x, ncol = 1)
     return(x)
   },
   random = function(x) {

@@ -119,6 +119,19 @@ test_that("simple intercept + covariate model is correctly constructed", {
   configuration = list()
   fmm = fmm_factory(formula, data, configuration)
   mm = fmm$.model$matrix
+  expect_equal(colnames(mm), c('intercept', 'zerg'))
   expect_equal(mm[,'intercept'], rep(1, nrow(mm)))
   expect_equal(mm[,'zerg'], data$zerg)
+})
+
+test_that("simple intercept + state model is correctly constructed", {
+  library(hierarchy)
+  formula = X ~ 1 + state(zerg)
+  data = data.frame(X = 2, bomo = rnorm(26), treatment_type = letters)
+  configuration = list()
+  fmm = fmm_factory(formula, data, configuration)
+  mm = fmm$.model$matrix
+  expect_equal(colnames(mm), c('intercept', 'zerg'))
+  expect_equal(mm[,'intercept'], rep(1, nrow(mm)))
+  expect_equal(mm[,'zerg'], rep(1, nrow(mm)))
 })
