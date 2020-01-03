@@ -1,6 +1,4 @@
-library(hierarchy)
-
-context("Testing the external API")
+library(testthat)
 
 test_that('formulate handles missing data object', {
   expect_error(hierarchy::formulate(), 
@@ -86,10 +84,14 @@ test_that('setup_configuration handles names properly', {
 
 
 test_that('formulate works for a simple model', {
-  skip('')
   models = list(X ~ 1 + treatment_type)
-  data = data.frame()
+  data = data.frame(treatment_type = letters)
   configuration = list()
   
   specification = hierarchy::formulate(models, data, configuration)
+  expect_equal(specification[['data']]$treatment_type, data$treatment_type)
+  mm = specification$matrices$X$.model$matrix
+  expect_equal(colnames(mm), c("intercept", letters[2:26]))
+  expect_equal(mm[,1], rep(1, nrow(mm)))
+  expect_equivalent(colSums(as.matrix(mm)), c(nrow(mm), rep(1, 25)))
 })

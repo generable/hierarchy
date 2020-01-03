@@ -350,7 +350,9 @@ default_imbue_methods = function() list(
     return(x)
   },
   radial_b_spline = function(x, k, min = min, max = max) {
+    tn = deparse(substitute(x))
     x = radial_b_spline(x, k, min, max)
+    colnames(x) = paste0(tn, '-', 1:ncol(x))
     attr(x, 'type') = 'spline'
     attr(x, 'effect_type') = 'fixed'
     return(x)

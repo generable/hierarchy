@@ -1,12 +1,28 @@
 
 
 #' Inefficiently transpose a sparse matrix
+#'
+#' Also transparently forwards to `t` for a dense matrix
 #' 
 #' @param m sparse matrix
 #' @return transpose of m
-st = function(m) Matrix::Matrix(t(as.matrix(m)))
+st = function(m) {
+  if (class(m) != 'matrix')
+    m = as.matrix(m)
+  m = Matrix::Matrix(t(m))
+  return(m)
+}
 
-#' Get non-zero entries of a matrix in a list of one item per row/column
+#' Get non-zero entries of a matrix in a list of one item 
+#' per row/column
+#'
+#' @param m matrix (usable by base `apply`)
+#' @param compression either 'row' (list will have one item
+#'        per row) or 'column' (list will have one vector
+#'        per column).
+#' @return if compression is 'row' list will have one item
+#'        per row.  If compression is 'column' (list will 
+#'        have one vector per column).
 get_nze = function(m, compression = "row") {
   if (compression == "row") {
     margin = 1

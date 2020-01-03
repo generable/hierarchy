@@ -1,43 +1,72 @@
+library(testthat)
 
 
-context("Function to construct data for a flat model matrix.")
-
-library(hierarchy); library(magrittr)
-
-test_that("test .", {
-
-  s_grid = sapply(X = 1:400, 
-      FUN = function(x) sample(0:9, 10, TRUE) %>% paste(collapse = "")
-    ) %>% unique
-  
-  counties = sapply(X = 1:47, 
-      FUN = function(x) sample(letters, 10, TRUE) %>% paste(collapse = "")
-    ) %>% unique
-  
-  N = 2000
-  
-  data = data.frame(
-    y = rnorm(N),
-    x = rnorm(N),
-    P_tilde_c = sample(counties, N, TRUE), 
-    P_tilde_s = sample(s_grid, N, TRUE)
-  )
-  
-  f = y ~ x + P_tilde_c + P_tilde_s
-  mm = model.matrix(f, data)
-  X_vec_mm = t(mm)[t(mm) != 0]
-  skip('flat_mm() is no longer part of hierarchy package; not sure how to test this')
-  mml = flat_mm(f, data)
-  X_vec_mml = mml[['X_vec']]
-
-  expect_equal(mml$P, ncol(mm))
-  expect_length(X_vec_mml, length(X_vec_mm))
-  expect_equivalent(X_vec_mm, X_vec_mml)
-  expect_named(mml$groups, c("(Intercept)", "x", "P_tilde_c", "P_tilde_s"))
-  expect_true(all(unlist(mml$involves) %in% names(mml$groups)))
-  expect_true(
-    all((cbind(mml$start, mml$stop) %>% 
-      apply(1, function(x) x[1]:x[2]) %>% 
-      unlist) == 1:mml$n_nze))
-  
+test_that("simple intercept model is correctly constructed", {
+  library(hierarchy)
+  formula = X ~ 1
+  data = data.frame(X = 2, treatment_type = letters)
+  configuration = list()
+  fmm = fmm_factory(formula, data, configuration)
+  mm = fmm$.model$matrix
+  expect_equal(mm[,1], rep(1, nrow(mm)))
 })
+
+test_that("simple intercept + contrast model is correctly constructed", {
+  library(hierarchy)
+  formula = X ~ 1 + treatment_type
+  data = data.frame(X = 2, treatment_type = letters)
+  configuration = list()
+  fmm = fmm_factory(formula, data, configuration)
+  mm = fmm$.model$matrix
+  expect_equal(mm[,1], rep(1, nrow(mm)))
+  expect_equivalent(Matrix::colSums(mm[,2:26]), rep(1, 25))
+})
+
+test_that("simple no-intercept + contrast model is correctly constructed", {
+  library(hierarchy)
+  formula = X ~ 0 + treatment_type
+  data = data.frame(X = 2, treatment_type = letters)
+  configuration = list()
+  fmm = fmm_factory(formula, data, configuration)
+  mm = fmm$.model$matrix
+  expect_equivalent(Matrix::colSums(mm), rep(1, 25))
+})
+
+# FIXME: this is not intuitive but maybe not fixable
+#        given the desire for consistency.  A bare name
+#        is always a contrast (non of this conditional
+#        stuff).
+test_that("simple contrast model is correctly constructed", {
+  library(hierarchy)
+  formula = X ~ treatment_type
+  data = data.frame(X = 2, treatment_type =c(letters, letters))
+  configuration = list()
+  fmm = fmm_factory(formula, data, configuration)
+  mm = fmm$.model$matrix
+  expect_equivalent(Matrix::colSums(mm), rep(2, 25))
+})
+
+test_that("simple factor-intercept model is correctly constructed", {
+  library(hierarchy)
+  formula = X ~ intercept(treatment_type)
+  data = data.frame(X = 2, treatment_type =c(letters, letters))
+  configuration = list()
+  fmm = fmm_factory(formula, data, configuration)
+  mm = fmm$.model$matrix
+  expect_equivalent(Matrix::colSums(mm), rep(2, 26))
+})
+
+
+test_that("simple spline model is correctly constructed", {
+  library(hierarchy)
+  formula = X ~ radial_b_spline(z, k, min, max)
+  data = data.frame(X = 2, z = rnorm(100))
+  configuration = list(k = 8)
+  fmm = fmm_factory(formula, data, configuration)
+  mm = fmm$.model$matrix
+  expect_equal(ncol(mm), configuration$k)
+  expect_equivalent(Matrix::rowSums(mm), rep(1, nrow(mm)))
+})
+
+
+
