@@ -351,6 +351,8 @@ default_imbue_methods = function() list(
   },
   radial_b_spline = function(x, k, min = min, max = max) {
     tn = deparse(substitute(x))
+    if (k <= 3) 
+      stop("Spline parameter 'k' must be greater than 3.")
     x = radial_b_spline(x, k, min, max)
     colnames(x) = paste0(tn, '-', 1:ncol(x))
     attr(x, 'type') = 'spline'
