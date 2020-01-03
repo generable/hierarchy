@@ -462,11 +462,14 @@ default_imbue_methods = function() list(
     names(x) = dots
     for (i in seq_along(x)) {
       type = attr(x[[i]], 'type')
-      if (!is.list(x[[i]]) && is.null(type) && is.numeric(x[[i]]))
+      if (!is.list(x[[i]]) && is.null(type) && is.numeric(x[[i]])) {
+        x[[i]] = matrix(data = x[[i]], ncol = 1)
+        colnames(x[[i]]) = names(x)[i]
         attr(x[[i]], 'type') = 'covariate'
-      else if (!is.list(x[[i]]) && is.null(type) && 
-	       (is.character(x[[i]]) || is.factor(x[[i]])))
+      } else if (!is.list(x[[i]]) && is.null(type) && 
+	       (is.character(x[[i]]) || is.factor(x[[i]]))) {
         attr(x[[i]], 'type') = 'contrast'
+      }
       x[[names(x)[i]]] = x[[i]]
     }
     attr(x, 'mode') = 'term'
