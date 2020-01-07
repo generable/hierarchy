@@ -651,6 +651,8 @@ column_powerset = function(x) {
   colnames(o) = purrr::map(cn_a, ~ paste0(., '::', cn_b)) %>%
     unlist()
   o = as(o, 'dgCMatrix')
+#  empty_columns = Matrix::colSums(o) == 0
+#  o = o[,!empty_columns]
   if (any(colnames(o) == 'BAD'))
     stop("Column names not transferred.")
   if (length(x) == 2) {
