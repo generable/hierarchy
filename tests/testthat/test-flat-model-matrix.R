@@ -54,6 +54,21 @@ test_that("simple factor-intercept model is correctly constructed", {
   fmm = fmm_factory(formula, data, configuration)
   mm = fmm$.model$matrix
   expect_equivalent(Matrix::colSums(mm), rep(2, 26))
+  expect_equivalent(Matrix::rowSums(mm), rep(1, 2 * 26))
+})
+
+test_that("simple factor-random model is correctly constructed", {
+  library(hierarchy)
+  formula = X ~ random(treatment_type)
+  data = data.frame(X = 2, treatment_type =c(letters, letters))
+  configuration = list()
+  fmm = fmm_factory(formula, data, configuration)
+  mm = fmm$.model$matrix
+  expect_equivalent(Matrix::colSums(mm), rep(2, 26))
+  expect_equivalent(Matrix::rowSums(mm), rep(1, 2 * 26))
+  expect_equivalent(fmm$.re_start, 1)
+  expect_equivalent(fmm$.re_stop, 26)
+  expect_equal(fmm$.re_names, 'random(treatment_type)')
 })
 
 test_that("simple spline model is correctly constructed", {

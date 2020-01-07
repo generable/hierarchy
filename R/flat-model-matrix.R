@@ -82,6 +82,10 @@ fmm_factory = methods::setRefClass(Class = "fmm",
       .self$.specifiers[['term_list']] = term_list(.self$.specifiers$term) 
       if (!is.list(.self$.specifiers[['term_list']]))
         .self$.specifiers[['term_list']] = list(.self$.specifiers$term_list)
+      if (class(.self$.specifiers$term_list$rhs) != "list")
+        .self$.specifiers$term_list$rhs = list(
+          .self$.specifiers$term_list$rhs)
+
       .self$.data = as.environment(data)
       .self$.configuration = as.environment(configuration)
       .self$.data$N = N
@@ -122,6 +126,8 @@ fmm_factory = methods::setRefClass(Class = "fmm",
       .self$.term_stop = array(cumsum(.self$.term_width))
       .self$.term_start = array(c(1, .self$.term_stop[-.self$.n_terms] + 1))
       .self$.term_names = sapply(.self$.specifiers$term_list[['rhs']], deparse)
+      .self$.term_names = gsub('^term\\(', '', .self$.term_names)
+      .self$.term_names = gsub('\\)$', '', .self$.term_names)
 
       # Group to columns    FIXME: need this
       #.self$.group_columns = mml$group_columns
