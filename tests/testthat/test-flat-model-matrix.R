@@ -106,7 +106,7 @@ test_that("simple intercept plus factor-random interaction model is correctly co
     treatment_type =c(letters[1:21], letters[1:21], letters[1:21]),
     dogs = toupper(letters[1:3])
   )
-  used = data %>% group_by(dogs, treatment_type) %>%
+  used = data %>% dplyr::group_by(dogs, treatment_type) %>%
     filter(dogs != "A") %>%
     summarize(count = n()) %>%
     ungroup() %>% 
@@ -132,7 +132,7 @@ test_that("simple intercept plus factor-random interaction model is correctly co
     treatment_type =c(letters[1:21], letters[1:21], letters[1:21]),
     dogs = toupper(letters[1:3])
   )
-  used = data %>% group_by(dogs, treatment_type) %>%
+  used = data %>% dplyr::group_by(dogs, treatment_type) %>%
     filter(dogs != "A") %>%
     summarize(count = n()) %>%
     ungroup() %>% 
