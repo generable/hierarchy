@@ -122,6 +122,54 @@ m_as_list = function(m) {
 }
 
 
+is_same_float <- function(xv, nze, last_start, last_stop, start, stop, tol = 1e-06) {
+  j <- start
+  if (last_start == 0 && last_stop == 0) {
+    if (start != 0) {
+      return(0)
+    } else {
+      return(1)
+    }
+  }
+  for (i in last_start:last_stop) {
+    if (abs(xv[i] - xv[j]) > tol)
+      return(0)
+    j = j + 1
+  }
+  return(1)
+}
 
+is_same_int <- function(nze, last_start, last_stop, start, stop) {
+  j <- start
+  if (last_start == 0 && last_stop == 0) {
+    if (start != 0) {
+      return(0)
+    } else {
+      return(1)
+    }
+  }
+  for (i in last_start:last_stop) {
+    if (nze[i] != nze[j])
+      return(0)
+    j = j + 1
+  }
+  return(1)
+}
+
+compute_same <- function(xv, start, stop, nze, tol = 1e-06) {
+  n_rows <- length(start)
+  same <- integer(n_rows)
+  same[1] <- 0L
+  for (j in 2:n_rows) {
+    if ((stop[j] - start[j]) == (stop[j - 1] - start[j - 1])
+        && is_same_int(nze, start[j - 1], stop[j - 1], start[j], stop[j])
+        && is_same_float(xv, nze, start[j - 1], stop[j - 1], start[j], stop[j], tol = tol)) {
+      same[j] <- 1L
+    } else {
+      same[j] <- 0L
+    }
+  }
+  same
+}
 
 

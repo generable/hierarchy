@@ -9,6 +9,7 @@ test_that("simple intercept model is correctly constructed", {
   fmm = fmm_factory(formula, data, configuration)
   mm = fmm$.model$matrix
   expect_equal(mm[,1], rep(1, nrow(mm)))
+  expect_true(all(fmm$.same[-1] == 1))
 })
 
 test_that("simple intercept + contrast model is correctly constructed", {
@@ -20,6 +21,7 @@ test_that("simple intercept + contrast model is correctly constructed", {
   mm = fmm$.model$matrix
   expect_equal(mm[,1], rep(1, nrow(mm)))
   expect_equivalent(Matrix::colSums(mm[,2:26]), rep(1, 25))
+  expect_true(all(fmm$.same == 0))
 })
 
 test_that("simple no-intercept + contrast model is correctly constructed", {
@@ -30,6 +32,7 @@ test_that("simple no-intercept + contrast model is correctly constructed", {
   fmm = fmm_factory(formula, data, configuration)
   mm = fmm$.model$matrix
   expect_equivalent(Matrix::colSums(mm), rep(1, 25))
+  expect_true(all(fmm$.same == 0))
 })
 
 # FIXME: this is not intuitive but maybe not fixable
@@ -44,6 +47,20 @@ test_that("simple contrast model is correctly constructed", {
   fmm = fmm_factory(formula, data, configuration)
   mm = fmm$.model$matrix
   expect_equivalent(Matrix::colSums(mm), rep(2, 25))
+  expect_true(all(fmm$.same == 0))
+})
+
+test_that("adjacent rows with same values are marked as 'same'", {
+  library(hierarchy)
+  formula = X ~ treatment_type
+  data = data.frame(X = 2, treatment_type =c(letters, letters)) %>%
+    dplyr::arrange(X, treatment_type)
+  configuration = list()
+  fmm = fmm_factory(formula, data, configuration)
+  mm = fmm$.model$matrix
+  expect_equivalent(Matrix::colSums(mm), rep(2, 25))
+  expect_false(all(fmm$.same == 0))
+  expect_equivalent(fmm$.same, rep(c(0,1), times = 26))
 })
 
 test_that("simple factor-intercept model is correctly constructed", {
@@ -55,6 +72,7 @@ test_that("simple factor-intercept model is correctly constructed", {
   mm = fmm$.model$matrix
   expect_equivalent(Matrix::colSums(mm), rep(2, 26))
   expect_equivalent(Matrix::rowSums(mm), rep(1, 2 * 26))
+  expect_true(all(fmm$.same == 0))
 })
 
 test_that("simple factor-random model is correctly constructed", {
@@ -69,6 +87,23 @@ test_that("simple factor-random model is correctly constructed", {
   expect_equivalent(fmm$.re_start, 1)
   expect_equivalent(fmm$.re_stop, 26)
   expect_equal(fmm$.re_names, 'random(treatment_type)')
+  expect_true(all(fmm$.same == 0))
+})
+
+test_that("simple factor-random model is correctly constructed (& adjacent rows marked 'same')", {
+  library(hierarchy)
+  formula = X ~ random(treatment_type)
+  data = data.frame(X = 2, treatment_type =c(letters, letters)) %>%
+    dplyr::arrange(treatment_type)
+  configuration = list()
+  fmm = fmm_factory(formula, data, configuration)
+  mm = fmm$.model$matrix
+  expect_equivalent(Matrix::colSums(mm), rep(2, 26))
+  expect_equivalent(Matrix::rowSums(mm), rep(1, 2 * 26))
+  expect_equivalent(fmm$.re_start, 1)
+  expect_equivalent(fmm$.re_stop, 26)
+  expect_equal(fmm$.re_names, 'random(treatment_type)')
+  expect_equivalent(fmm$.same, rep(c(0,1), times = 26))
 })
 
 test_that("simple intercept plus factor-random model is correctly constructed", {
@@ -83,7 +118,25 @@ test_that("simple intercept plus factor-random model is correctly constructed", 
   expect_equivalent(fmm$.re_start, 2)
   expect_equivalent(fmm$.re_stop, 27)
   expect_equal(fmm$.re_names, c('random(treatment_type)'))
+  expect_true(all(fmm$.same == 0))
 })
+
+test_that("simple intercept plus factor-random model is correctly constructed (& adjacent rows marked 'same')", {
+  library(hierarchy)
+  formula = X ~ intercept() + random(treatment_type)
+  data = data.frame(X = 2, treatment_type =c(letters, letters)) %>%
+    dplyr::arrange(treatment_type)
+  configuration = list()
+  fmm = fmm_factory(formula, data, configuration)
+  mm = fmm$.model$matrix
+  expect_equivalent(Matrix::colSums(mm), c(nrow(mm), rep(2, 26)))
+  expect_equivalent(Matrix::rowSums(mm), rep(2, 2 * 26))
+  expect_equivalent(fmm$.re_start, 2)
+  expect_equivalent(fmm$.re_stop, 27)
+  expect_equal(fmm$.re_names, c('random(treatment_type)'))
+  expect_equivalent(fmm$.same, rep(c(0,1), times = 26))
+})
+
 
 test_that("simple intercept plus factor-random model is correctly constructed", {
   library(hierarchy)
@@ -97,6 +150,7 @@ test_that("simple intercept plus factor-random model is correctly constructed", 
   expect_equivalent(fmm$.re_start, 2)
   expect_equivalent(fmm$.re_stop, 27)
   expect_equal(fmm$.re_names, c('random(treatment_type)'))
+  
 })
 
 test_that("simple intercept plus factor-random interaction model is correctly constructed", {
@@ -123,6 +177,35 @@ test_that("simple intercept plus factor-random interaction model is correctly co
   expect_equivalent(fmm$.re_start, 2)
   expect_equivalent(fmm$.re_stop, ncol(mm))
   expect_equal(fmm$.re_names, c('dogs, random(treatment_type)'))
+  expect_true(all(fmm$.same == 0))
+})
+
+test_that("simple intercept plus factor-random interaction model is correctly constructed (& adjacent rows marked 'same')", {
+  library(hierarchy)
+  formula = X ~ intercept() + dogs:random(treatment_type)
+  data = data.frame(X = 2, 
+                    treatment_type =c(letters[1:21], letters[1:21], letters[1:21]),
+                    dogs = toupper(letters[1:3])
+  ) %>%
+    dplyr::arrange(treatment_type, dogs)
+  used = data %>% group_by(dogs, treatment_type) %>%
+    filter(dogs != "A") %>%
+    summarize(count = n()) %>%
+    ungroup() %>% 
+    transmute(cn = paste(dogs, treatment_type, sep = '::'),
+              count = count)
+  used_columns = used %>% select(cn) %>% unlist(use.names=FALSE)
+  used_counts = used %>% select(count) %>% unlist(use.names=FALSE)
+  configuration = list()
+  fmm = fmm_factory(formula, data, configuration)
+  mm = fmm$.model$matrix
+  used_columns = which(colnames(mm) %in% used_columns)
+  expect_equivalent(Matrix::colSums(mm[,used_columns]), used_counts)  
+  expect_equivalent(Matrix::rowSums(mm), rep(1, nrow(mm)) + (data$dogs != "A"))
+  expect_equivalent(fmm$.re_start, 2)
+  expect_equivalent(fmm$.re_stop, ncol(mm))
+  expect_equal(fmm$.re_names, c('dogs, random(treatment_type)'))
+  expect_equivalent(fmm$.same, rep(c(0,1,1), times = 21))
 })
 
 test_that("simple intercept plus factor-random interaction model is correctly constructed", {
