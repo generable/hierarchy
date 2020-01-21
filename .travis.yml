@@ -14,7 +14,7 @@ r_github_packages:
   - r-lib/devtools
   - r-lib/testthat
 r_packages:
-  - dplyr
+  - tidyverse
 script:
   - Rscript -e 'devtools::install_deps(dependencies = T, upgrade = "always")'
   - Rscript -e 'devtools::install_local(force = T, upgrade = "always")'
