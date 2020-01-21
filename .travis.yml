@@ -13,6 +13,8 @@ r_github_packages:
   - r-lib/covr
   - r-lib/devtools
   - r-lib/testthat
+r_packages:
+  - dplyr
 script:
   - Rscript -e 'devtools::install_deps(dependencies = T, upgrade = "always")'
   - Rscript -e 'devtools::install_local(force = T, upgrade = "always")'
