@@ -2,7 +2,6 @@ library(testthat)
 
 
 test_that("simple intercept model is correctly constructed", {
-  library(hierarchy)
   formula = X ~ 1
   data = data.frame(X = 2, treatment_type = letters)
   configuration = list()
@@ -13,7 +12,6 @@ test_that("simple intercept model is correctly constructed", {
 })
 
 test_that("simple intercept + contrast model is correctly constructed", {
-  library(hierarchy)
   formula = X ~ 1 + treatment_type
   data = data.frame(X = 2, treatment_type = letters)
   configuration = list()
@@ -25,7 +23,6 @@ test_that("simple intercept + contrast model is correctly constructed", {
 })
 
 test_that("simple no-intercept + contrast model is correctly constructed", {
-  library(hierarchy)
   formula = X ~ 0 + treatment_type
   data = data.frame(X = 2, treatment_type = letters)
   configuration = list()
@@ -40,7 +37,6 @@ test_that("simple no-intercept + contrast model is correctly constructed", {
 #        is always a contrast (non of this conditional
 #        stuff).
 test_that("simple contrast model is correctly constructed", {
-  library(hierarchy)
   formula = X ~ treatment_type
   data = data.frame(X = 2, treatment_type =c(letters, letters))
   configuration = list()
@@ -51,7 +47,6 @@ test_that("simple contrast model is correctly constructed", {
 })
 
 test_that("adjacent rows with same values are marked as 'same'", {
-  library(hierarchy)
   formula = X ~ treatment_type
   data = data.frame(X = 2, treatment_type =c(letters, letters)) %>%
     dplyr::arrange(X, treatment_type)
@@ -64,7 +59,6 @@ test_that("adjacent rows with same values are marked as 'same'", {
 })
 
 test_that("simple factor-intercept model is correctly constructed", {
-  library(hierarchy)
   formula = X ~ intercept(treatment_type)
   data = data.frame(X = 2, treatment_type =c(letters, letters))
   configuration = list()
@@ -76,7 +70,6 @@ test_that("simple factor-intercept model is correctly constructed", {
 })
 
 test_that("simple factor-random model is correctly constructed", {
-  library(hierarchy)
   formula = X ~ random(treatment_type)
   data = data.frame(X = 2, treatment_type =c(letters, letters))
   configuration = list()
@@ -91,7 +84,6 @@ test_that("simple factor-random model is correctly constructed", {
 })
 
 test_that("simple factor-random model is correctly constructed (& adjacent rows marked 'same')", {
-  library(hierarchy)
   formula = X ~ random(treatment_type)
   data = data.frame(X = 2, treatment_type =c(letters, letters)) %>%
     dplyr::arrange(treatment_type)
@@ -107,7 +99,6 @@ test_that("simple factor-random model is correctly constructed (& adjacent rows 
 })
 
 test_that("simple intercept plus factor-random model is correctly constructed", {
-  library(hierarchy)
   formula = X ~ intercept() + random(treatment_type)
   data = data.frame(X = 2, treatment_type =c(letters, letters))
   configuration = list()
@@ -122,7 +113,6 @@ test_that("simple intercept plus factor-random model is correctly constructed", 
 })
 
 test_that("simple intercept plus factor-random model is correctly constructed (& adjacent rows marked 'same')", {
-  library(hierarchy)
   formula = X ~ intercept() + random(treatment_type)
   data = data.frame(X = 2, treatment_type =c(letters, letters)) %>%
     dplyr::arrange(treatment_type)
@@ -139,7 +129,6 @@ test_that("simple intercept plus factor-random model is correctly constructed (&
 
 
 test_that("simple intercept plus factor-random model is correctly constructed", {
-  library(hierarchy)
   formula = X ~ intercept() + random(treatment_type)
   data = data.frame(X = 2, treatment_type =c(letters, letters))
   configuration = list()
@@ -154,7 +143,6 @@ test_that("simple intercept plus factor-random model is correctly constructed", 
 })
 
 test_that("simple intercept plus factor-random interaction model is correctly constructed", {
-  library(hierarchy)
   formula = X ~ intercept() + dogs:random(treatment_type)
   data = data.frame(X = 2, 
     treatment_type =c(letters[1:21], letters[1:21], letters[1:21]),
@@ -181,7 +169,6 @@ test_that("simple intercept plus factor-random interaction model is correctly co
 })
 
 test_that("simple intercept plus factor-random interaction model is correctly constructed (& adjacent rows marked 'same')", {
-  library(hierarchy)
   formula = X ~ intercept() + dogs:random(treatment_type)
   data = data.frame(X = 2, 
                     treatment_type =c(letters[1:21], letters[1:21], letters[1:21]),
@@ -209,7 +196,6 @@ test_that("simple intercept plus factor-random interaction model is correctly co
 })
 
 test_that("simple intercept plus factor-random interaction model is correctly constructed", {
-  library(hierarchy)
   formula = X ~ intercept() + intercept(dogs):random(treatment_type)
   data = data.frame(X = 2, 
     treatment_type =c(letters[1:21], letters[1:21], letters[1:21]),
@@ -236,7 +222,6 @@ test_that("simple intercept plus factor-random interaction model is correctly co
 })
 
 test_that("simple spline model is correctly constructed", {
-  library(hierarchy)
   formula = X ~ radial_b_spline(z, k, min, max)
   data = data.frame(X = 2, z = rnorm(100))
   configuration = list(k = 8)
@@ -247,7 +232,6 @@ test_that("simple spline model is correctly constructed", {
 })
 
 test_that("simple spline model with four knots is correctly constructed", {
-  library(hierarchy)
   formula = X ~ radial_b_spline(z, k, min, max)
   data = data.frame(X = 2, z = rnorm(100))
   configuration = list(k = 4)
@@ -258,7 +242,6 @@ test_that("simple spline model with four knots is correctly constructed", {
 })
 
 test_that("simple spline model with three knots fails.", {
-  library(hierarchy)
   formula = X ~ radial_b_spline(z, k, min, max)
   data = data.frame(X = 2, z = rnorm(100))
   configuration = list(k = 4)
@@ -266,7 +249,6 @@ test_that("simple spline model with three knots fails.", {
 })
 
 test_that("simple spline-factor interaction model is correctly constructed", {
-  library(hierarchy)
   formula = X ~ intercept(dogs):radial_b_spline(z, k, min, max)
   data = data.frame(X = 2, z = rnorm(100), 
     dogs = sample(letters[1:4], 100, replace = TRUE))
@@ -278,7 +260,6 @@ test_that("simple spline-factor interaction model is correctly constructed", {
 })
 
 test_that("simple spline-random-factor interaction model is correctly constructed", {
-  library(hierarchy)
   formula = X ~ random(dogs):radial_b_spline(z, k, min, max)
   data = data.frame(X = 2, z = rnorm(100), 
     dogs = sample(letters[1:4], 100, replace = TRUE))
@@ -293,7 +274,6 @@ test_that("simple spline-random-factor interaction model is correctly constructe
 })
 
 test_that("simple intercept plus spline-contrast interaction model is correctly constructed", {
-  library(hierarchy)
   formula = X ~ 1 + dogs:radial_b_spline(z, k, min, max)
   data = data.frame(X = 2, z = rnorm(100), 
     dogs = sample(letters[1:4], 100, replace = TRUE))
@@ -307,7 +287,6 @@ test_that("simple intercept plus spline-contrast interaction model is correctly 
 })
 
 test_that("simple intercept + covariate model is correctly constructed", {
-  library(hierarchy)
   formula = X ~ 1 + covariate(zerg)
   data = data.frame(X = 2, zerg = rnorm(26), treatment_type = letters)
   configuration = list()
@@ -319,7 +298,6 @@ test_that("simple intercept + covariate model is correctly constructed", {
 })
 
 test_that("simple intercept + state model is correctly constructed", {
-  library(hierarchy)
   formula = X ~ 1 + state(zerg)
   data = data.frame(X = 2, bomo = rnorm(26), treatment_type = letters)
   configuration = list()
@@ -331,10 +309,10 @@ test_that("simple intercept + state model is correctly constructed", {
   expect_equal(fmm$.term_names, c('intercept()', 'state(zerg)'))
   expect_equivalent(fmm$.term_start, 1:2)
   expect_equivalent(fmm$.term_stop,1:2)
+  expect_true(all(fmm$.same == 0))
 })
 
 test_that("simple intercept + bare covariate model is correctly constructed", {
-  library(hierarchy)
   formula = X ~ 1 + zerg
   data = data.frame(X = 2, zerg = rnorm(26), treatment_type = letters)
   configuration = list()
