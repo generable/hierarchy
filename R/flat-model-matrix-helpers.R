@@ -156,9 +156,13 @@ is_same_int <- function(nze, last_start, last_stop, start, stop) {
   return(1)
 }
 
-compute_same <- function(xv, start, stop, nze, tol = 1e-06) {
+compute_same <- function(xv, start, stop, nze, n_state_terms = 0, tol = 1e-06) {
   n_rows <- length(start)
   same <- integer(n_rows)
+  # mark all `same` as 0 if n_state_terms > 0, conservatively
+  if (n_state_terms > 0) {
+    return(same)
+  }
   same[1] <- 0L
   for (j in 2:n_rows) {
     if ((stop[j] - start[j]) == (stop[j - 1] - start[j - 1])

@@ -115,7 +115,6 @@ fmm_factory = methods::setRefClass(Class = "fmm",
       .self$.col_skips = array(.model$list$col_skip)
       .self$.col_start = array(.model$list$col_start)
       .self$.col_stop = array(.model$list$col_stop)
-      .self$.same = array(compute_same(xv = .model$list$xv, start = .model$list$start, stop = .model$list$stop, nze = .model$list$nze))
 
       # Response
       .self$.y_name = deparse(.self$.specifiers$term_list['lhs'])
@@ -162,6 +161,7 @@ fmm_factory = methods::setRefClass(Class = "fmm",
       .self$.state_names = .self$.term_names[.self$.state_terms]
       .self$.state_start = array(.self$.term_start[.self$.state_terms])
       .self$.state_stop = array(.self$.term_stop[.self$.state_terms])
+      .self$.same = array(compute_same(xv = .model$list$xv, start = .model$list$start, stop = .model$list$stop, nze = .model$list$nze, n_state_terms = self$.n_state_terms))
     },
     expose = function(...) {
       "Extractor that takes a named vector and provides the relevant
