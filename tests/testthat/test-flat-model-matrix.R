@@ -177,7 +177,7 @@ test_that("simple intercept plus factor-random interaction model is correctly co
     dplyr::arrange(treatment_type, dogs)
   used = data %>% dplyr::group_by(dogs, treatment_type) %>%
     dplyr::filter(dogs != "A") %>%
-    dplyr::summarize(count = n()) %>%
+    dplyr::summarize(count = dplyr::n()) %>%
     dplyr::ungroup() %>% 
     dplyr::transmute(cn = paste(dogs, treatment_type, sep = '::'),
               count = count)
