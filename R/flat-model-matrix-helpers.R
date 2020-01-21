@@ -122,7 +122,7 @@ m_as_list = function(m) {
 }
 
 row_lengths_equiv <- function(start, stop) {
-  (start - stop == lag(start) - lag(stop)) %>%
+  (start - stop == dplyr::lag(start) - dplyr::lag(stop)) %>%
     as.logical() %>%
     purrr::modify_if(~ is.na(.), ~ FALSE)
 }
@@ -141,7 +141,7 @@ row_part <- function(vals, start, stop) {
 row_parts_equal_prev <- function(vals, start, stop) {
   # test each row against its previous values
   purrr::map2(row_part(vals, start, stop),
-              row_part(vals, lag(start), lag(stop)),
+              row_part(vals, dplyr::lag(start), dplyr::lag(stop)),
               dplyr::near) %>%
     # convert 0-length vector to FALSE
     purrr::modify_if(~ length(.) == 0, ~ FALSE) %>%
@@ -161,10 +161,10 @@ compute_same <- function(xv, start, stop, nze, n_state_terms = 0) {
   if (n_state_terms > 0) {
     return(same)
   }
-  row_lengths_equiv <- row_lengths_equiv(start, stop)
+  row_len_equiv <- row_lengths_equiv(start, stop)
   row_nze_equiv <- row_parts_equal_prev(nze, start, stop)
   row_xv_equiv <- row_parts_equal_prev(xv, start, stop)
-  same <- dplyr::if_else(row_lengths_equiv & row_nze_equiv & row_xv_equiv,
+  same <- dplyr::if_else(row_len_equiv & row_nze_equiv & row_xv_equiv,
                          1L, 0L)
 }
 

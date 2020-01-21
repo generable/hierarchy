@@ -175,14 +175,14 @@ test_that("simple intercept plus factor-random interaction model is correctly co
                     dogs = toupper(letters[1:3])
   ) %>%
     dplyr::arrange(treatment_type, dogs)
-  used = data %>% group_by(dogs, treatment_type) %>%
-    filter(dogs != "A") %>%
-    summarize(count = n()) %>%
-    ungroup() %>% 
-    transmute(cn = paste(dogs, treatment_type, sep = '::'),
+  used = data %>% dplyr::group_by(dogs, treatment_type) %>%
+    dplyr::filter(dogs != "A") %>%
+    dplyr::summarize(count = n()) %>%
+    dplyr::ungroup() %>% 
+    dplyr::transmute(cn = paste(dogs, treatment_type, sep = '::'),
               count = count)
-  used_columns = used %>% select(cn) %>% unlist(use.names=FALSE)
-  used_counts = used %>% select(count) %>% unlist(use.names=FALSE)
+  used_columns = used %>% dplyr::select(cn) %>% unlist(use.names=FALSE)
+  used_counts = used %>% dplyr::select(count) %>% unlist(use.names=FALSE)
   configuration = list()
   fmm = fmm_factory(formula, data, configuration)
   mm = fmm$.model$matrix
