@@ -121,59 +121,51 @@ m_as_list = function(m) {
   return(m_list_form)
 }
 
-
-is_same_float <- function(xv, nze, last_start, last_stop, start, stop, tol = 1e-06) {
-  j <- start
-  if (last_start == 0 && last_stop == 0) {
-    if (start != 0) {
-      return(0)
-    } else {
-      return(1)
-    }
-  }
-  for (i in last_start:last_stop) {
-    if (abs(xv[i] - xv[j]) > tol)
-      return(0)
-    j = j + 1
-  }
-  return(1)
+row_lengths_equiv <- function(start, stop) {
+  (start - stop == lag(start) - lag(stop)) %>%
+    as.logical() %>%
+    purrr::modify_if(~ is.na(.), ~ FALSE)
 }
 
-is_same_int <- function(nze, last_start, last_stop, start, stop) {
-  j <- start
-  if (last_start == 0 && last_stop == 0) {
-    if (start != 0) {
-      return(0)
-    } else {
-      return(1)
-    }
-  }
-  for (i in last_start:last_stop) {
-    if (nze[i] != nze[j])
-      return(0)
-    j = j + 1
-  }
-  return(1)
+#' construct list of values for each row, given start & stop indices
+#' (where NA indices result in NA values & 0-valued indices result in 0 values)
+row_part <- function(vals, start, stop) {
+  purrr::map2(start, stop, 
+              ~ if (is.na(.x)) {NA} else if (.x == 0) {0} else {vals[.x:.y]})
 }
 
-compute_same <- function(xv, start, stop, nze, n_state_terms = 0, tol = 1e-06) {
+#' test each row of sparse-matrix values against a previous row's values
+#' where each row's values are indexed by start & stop vectors
+#' 
+#' @return a logical vector of length start
+row_parts_equal_prev <- function(vals, start, stop) {
+  # test each row against its previous values
+  purrr::map2(row_part(vals, start, stop),
+              row_part(vals, lag(start), lag(stop)),
+              dplyr::near) %>%
+    # convert 0-length vector to FALSE
+    purrr::modify_if(~ length(.) == 0, ~ FALSE) %>%
+    # a row is TRUE only if all values are equivalent
+    purrr::map_lgl(all) %>%
+    # NA values (the first row) are FALSE
+    purrr::modify_if(~ is.na(.), ~ FALSE)
+}
+
+#' compute the `_same` vector indicating which rows are equivalent to the previous row
+#' in a sparse matrix context.
+#' @return an integer vector of length start where 0: not the same and 1: same
+compute_same <- function(xv, start, stop, nze, n_state_terms = 0) {
   n_rows <- length(start)
   same <- integer(n_rows)
   # mark all `same` as 0 if n_state_terms > 0, conservatively
   if (n_state_terms > 0) {
     return(same)
   }
-  same[1] <- 0L
-  for (j in 2:n_rows) {
-    if ((stop[j] - start[j]) == (stop[j - 1] - start[j - 1])
-        && is_same_int(nze, start[j - 1], stop[j - 1], start[j], stop[j])
-        && is_same_float(xv, nze, start[j - 1], stop[j - 1], start[j], stop[j], tol = tol)) {
-      same[j] <- 1L
-    } else {
-      same[j] <- 0L
-    }
-  }
-  same
+  row_lengths_equiv <- row_lengths_equiv(start, stop)
+  row_nze_equiv <- row_parts_equal_prev(nze, start, stop)
+  row_xv_equiv <- row_parts_equal_prev(xv, start, stop)
+  same <- dplyr::if_else(row_lengths_equiv & row_nze_equiv & row_xv_equiv,
+                         1L, 0L)
 }
 
 
