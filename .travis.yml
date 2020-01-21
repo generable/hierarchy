@@ -18,4 +18,5 @@ r_packages:
 script:
   - Rscript -e 'devtools::install_deps(dependencies = T, upgrade = "always")'
   - Rscript -e 'devtools::install_local(force = T, upgrade = "always")'
+  - Rscript -e 'devtools::session_info()'
   - Rscript -e 'res=devtools::test(reporter="summary");df=as.data.frame(res);if(sum(df$failed) > 0 || any(df$error)) {q(status=1)}'
