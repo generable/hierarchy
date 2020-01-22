@@ -121,7 +121,51 @@ m_as_list = function(m) {
   return(m_list_form)
 }
 
+row_lengths_equiv <- function(start, stop) {
+  (start - stop == dplyr::lag(start) - dplyr::lag(stop)) %>%
+    as.logical() %>%
+    purrr::modify_if(~ is.na(.), ~ FALSE)
+}
 
+#' construct list of values for each row, given start & stop indices
+#' (where NA indices result in NA values & 0-valued indices result in 0 values)
+row_part <- function(vals, start, stop) {
+  purrr::map2(start, stop, 
+              ~ if (is.na(.x)) {NA} else if (.x == 0) {0} else {vals[.x:.y]})
+}
 
+#' test each row of sparse-matrix values against a previous row's values
+#' where each row's values are indexed by start & stop vectors
+#' 
+#' @return a logical vector of length start
+row_parts_equal_prev <- function(vals, start, stop) {
+  # test each row against its previous values
+  purrr::map2(row_part(vals, start, stop),
+              row_part(vals, dplyr::lag(start), dplyr::lag(stop)),
+              dplyr::near) %>%
+    # convert 0-length vector to FALSE
+    purrr::modify_if(~ length(.) == 0, ~ FALSE) %>%
+    # a row is TRUE only if all values are equivalent
+    purrr::map_lgl(all) %>%
+    # NA values (the first row) are FALSE
+    purrr::modify_if(~ is.na(.), ~ FALSE)
+}
+
+#' compute the `_same` vector indicating which rows are equivalent to the previous row
+#' in a sparse matrix context.
+#' @return an integer vector of length start where 0: not the same and 1: same
+compute_same <- function(xv, start, stop, nze, n_state_terms = 0) {
+  n_rows <- length(start)
+  same <- integer(n_rows)
+  # mark all `same` as 0 if n_state_terms > 0, conservatively
+  if (n_state_terms > 0) {
+    return(same)
+  }
+  row_len_equiv <- row_lengths_equiv(start, stop)
+  row_nze_equiv <- row_parts_equal_prev(nze, start, stop)
+  row_xv_equiv <- row_parts_equal_prev(xv, start, stop)
+  same <- dplyr::if_else(row_len_equiv & row_nze_equiv & row_xv_equiv,
+                         1L, 0L)
+}
 
 

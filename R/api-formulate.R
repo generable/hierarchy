@@ -57,7 +57,7 @@ formulate = function(models = list(),
     "state_terms", "n_state_terms", "state_start", "state_stop",
     "constant_terms", "n_constant_terms",
     "coefficient_terms", "n_coefficient_terms",
-    "n_re", "re_start", "re_stop", "xv")
+    "n_re", "re_start", "re_stop", "xv", "same")
 
   stan_inputs = list()
   for (name in response_names) {
