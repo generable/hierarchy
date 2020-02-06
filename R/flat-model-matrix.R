@@ -1,5 +1,4 @@
-#' A class for creating a flat sparse model matrix
-#' representation
+#' A Reference Class to represent a flat sparse model matrix.
 #'
 #' @field .n_row number of observations in model matrix
 #' @field .n_col number of columns in the model matrix
@@ -63,11 +62,18 @@ fmm_factory = methods::setRefClass(Class = "fmm",
     .state_start = "array",
     .state_stop = "array",
     .data = "environment",
-    .configuration = "environment"
+    .configuration = "environment",
+    .same = "array"
   ),
   methods = list(
     initialize = function(formula, data, configuration, N = nrow(data), ...) {
-      "Create the implicit mass matrix and store components."
+      "Create the implicit mass matrix and store components.
+      
+      @param formula
+      
+      @param data data that has the lhs of the formula as one of the columns
+      
+      @param configuration a configuration object"
       .self$.specifiers = list(
         original = formula,
         simple = simplify(formula),
@@ -77,6 +83,10 @@ fmm_factory = methods::setRefClass(Class = "fmm",
       .self$.specifiers[['term_list']] = term_list(.self$.specifiers$term) 
       if (!is.list(.self$.specifiers[['term_list']]))
         .self$.specifiers[['term_list']] = list(.self$.specifiers$term_list)
+      if (class(.self$.specifiers$term_list$rhs) != "list")
+        .self$.specifiers$term_list$rhs = list(
+          .self$.specifiers$term_list$rhs)
+
       .self$.data = as.environment(data)
       .self$.configuration = as.environment(configuration)
       .self$.data$N = N
@@ -105,7 +115,6 @@ fmm_factory = methods::setRefClass(Class = "fmm",
       .self$.col_skips = array(.model$list$col_skip)
       .self$.col_start = array(.model$list$col_start)
       .self$.col_stop = array(.model$list$col_stop)
-      .self$.col_stop = array(.model$list$col_stop)
 
       # Response
       .self$.y_name = deparse(.self$.specifiers$term_list['lhs'])
@@ -117,6 +126,8 @@ fmm_factory = methods::setRefClass(Class = "fmm",
       .self$.term_stop = array(cumsum(.self$.term_width))
       .self$.term_start = array(c(1, .self$.term_stop[-.self$.n_terms] + 1))
       .self$.term_names = sapply(.self$.specifiers$term_list[['rhs']], deparse)
+      .self$.term_names = gsub('^term\\(', '', .self$.term_names)
+      .self$.term_names = gsub('\\)$', '', .self$.term_names)
 
       # Group to columns    FIXME: need this
       #.self$.group_columns = mml$group_columns
@@ -150,6 +161,7 @@ fmm_factory = methods::setRefClass(Class = "fmm",
       .self$.state_names = .self$.term_names[.self$.state_terms]
       .self$.state_start = array(.self$.term_start[.self$.state_terms])
       .self$.state_stop = array(.self$.term_stop[.self$.state_terms])
+      .self$.same = array(compute_same(xv = .model$list$xv, start = .model$list$start, stop = .model$list$stop, nze = .model$list$nze, n_state_terms = .self$.n_state_terms))
     },
     expose = function(...) {
       "Extractor that takes a named vector and provides the relevant
@@ -238,7 +250,7 @@ fmm_factory = methods::setRefClass(Class = "fmm",
     },
     get_matrix = function(flat=FALSE) {
       if (flat)
-        return(.sefl$.model$list)
+        return(.self$.model$list)
       else
         return(.self$.model$matrix)
     }

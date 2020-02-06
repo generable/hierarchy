@@ -1,18 +1,22 @@
 Package: hierarchy
 Type: Package
 Title: Package for handling inputs to hierarchical models.
-Version: 0.0.1
+Version: 0.0.1.9000
 Date: 2018-08-30
 Authors@R: person("Krzysztof", "Sakrejda", email = "sakrejda@umass.edu", role = c("cre", "aut"))
 Description: A user-facing package for handling hierarchical models.
 BugReports: https://github.com/sakrejda/hierarchy/issues
 License: GPL-3
 Imports:
+    checkmate,
     lubridate,
     Matrix,
-    MatrixModels
+    MatrixModels,
+    checkmate,
+    purrr,
+    dplyr
 VignetteBuilder: knitr
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 Suggests: 
     testthat,
     magrittr

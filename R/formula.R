@@ -6,7 +6,6 @@ op = function(x) x[[1]]
 lhs = function(x) x[[2]]
 arg = function(x) lhs(x)
 rhs = function(x) x[[3]]
-response_name = function(x) if (is_formula(x)) lhs(x) else NULL
 
 func = function(x) rlang::node_car(x)
 args = function(x) rlang::node_cdr(x)
@@ -311,11 +310,6 @@ default_imbue_methods = function() list(
     }
     return(x)
   },
-  constant = function(x) {
-    attr(x, 'type') = 'constant'
-    attr(x, 'effect_type') = 'fixed'
-    return(x)
-  },
   contrast = function(...) {
     if (list(...) == list()) {
       return(NULL)
@@ -344,24 +338,6 @@ default_imbue_methods = function() list(
       }
     }
     return(x)
-  },
-  covariate = function(x) {
-    attr(x, 'type') = 'covariate'
-    attr(x, 'effect_type') = 'fixed'
-    return(x)
-  },
-  radial_b_spline = function(x, k, min = min, max = max) {
-    x = radial_b_spline(x, k, min, max)
-    attr(x, 'type') = 'spline'
-    attr(x, 'effect_type') = 'fixed'
-    return(x)
-  },
-  state = function(x) {
-    x = 1
-    attr(x, 'type') = 'covariate'
-    attr(x, 'effect_type') = 'fixed'
-    attr(x, 'model') = 'state'
-    return(x) 
   },
   random = function(...) {
     if (missing(...)) {
@@ -434,6 +410,44 @@ default_imbue_methods = function() list(
     }
     return(x)
   },
+  constant = function(x) {
+    tn = deparse(substitute(x))
+    x = matrix(data = x, nrow = length(x), ncol = 1)
+    colnames(x) = tn
+    attr(x, 'name') = tn
+    attr(x, 'type') = 'constant'
+    attr(x, 'effect_type') = 'fixed'
+    return(x)
+  },
+  covariate = function(x) {
+    tn = deparse(substitute(x))
+    x = matrix(data = x, nrow = length(x), ncol = 1)
+    colnames(x) = tn
+    attr(x, 'name') = tn
+    attr(x, 'type') = 'covariate'
+    attr(x, 'effect_type') = 'fixed'
+    return(x)
+  },
+  radial_b_spline = function(x, k, min = min, max = max) {
+    tn = deparse(substitute(x))
+    if (k <= 3) 
+      stop("Spline parameter 'k' must be greater than 3.")
+    x = radial_b_spline(x, k, min, max)
+    colnames(x) = paste0(tn, '-', 1:ncol(x))
+    attr(x, 'type') = 'spline'
+    attr(x, 'effect_type') = 'fixed'
+    return(x)
+  },
+  state = function(x) {
+    tn = deparse(substitute(x))
+    x = matrix(data = 1, nrow = 1, ncol = 1)
+    colnames(x) = tn
+    attr(x, 'name') = tn
+    attr(x, 'type') = 'covariate'
+    attr(x, 'effect_type') = 'fixed'
+    attr(x, 'model') = 'state'
+    return(x) 
+  },
   term = function(...) {
     if (missing(...))
       return(NULL)
@@ -448,11 +462,14 @@ default_imbue_methods = function() list(
     names(x) = dots
     for (i in seq_along(x)) {
       type = attr(x[[i]], 'type')
-      if (!is.list(x[[i]]) && is.null(type) && is.numeric(x[[i]]))
+      if (!is.list(x[[i]]) && is.null(type) && is.numeric(x[[i]])) {
+        x[[i]] = matrix(data = x[[i]], ncol = 1)
+        colnames(x[[i]]) = names(x)[i]
         attr(x[[i]], 'type') = 'covariate'
-      else if (!is.list(x[[i]]) && is.null(type) && 
-	       (is.character(x[[i]]) || is.factor(x[[i]])))
+      } else if (!is.list(x[[i]]) && is.null(type) && 
+	       (is.character(x[[i]]) || is.factor(x[[i]]))) {
         attr(x[[i]], 'type') = 'contrast'
+      }
       x[[names(x)[i]]] = x[[i]]
     }
     attr(x, 'mode') = 'term'
@@ -473,11 +490,18 @@ extend_recursive = function(x, N) {
     stop("N must be specified.")
   if (!is.list(x) && length(x) == N)
     return(x)
-  if (!is.list(x) && length(dim(x)) == 2 && nrow(x) == N)
+  if (!is.list(x) && length(dim(x)) == 2 && nrow(x) == N) {
     return(x)
-  else if (!is.list(x) && length(x) != 1)
+  } else if (!is.list(x) && length(dim(x)) == 2 && nrow(x) == 1) {
+    rownames(x) = NULL
+    at = attributes(x)
+    at$dim = c(N, at$dim[2])
+    x = do.call(rbind, args = replicate(N, x, FALSE))
+    attributes(x) = at
+    return(x) 
+  } else if (!is.list(x) && length(x) != 1) {
     stop(paste("Data length must be 1 or ", N))
-  else if (!is.list(x)) {
+  } else if (!is.list(x)) {
     at = attributes(x)
     x = rep(x, N)
     attributes(x) = at
@@ -555,7 +579,10 @@ default_expand_methods = function() list(
     return(x)
   },
   covariate = function(x) {
-    x = Matrix::Matrix(data = x, ncol = 1)
+    if (is.matrix(x))
+      x = Matrix::Matrix(data = x)
+    else 
+      x = Matrix::Matrix(data = x, ncol = 1)
     return(x)
   },
   random = function(x) {
@@ -624,6 +651,8 @@ column_powerset = function(x) {
   colnames(o) = purrr::map(cn_a, ~ paste0(., '::', cn_b)) %>%
     unlist()
   o = as(o, 'dgCMatrix')
+#  empty_columns = Matrix::colSums(o) == 0
+#  o = o[,!empty_columns]
   if (any(colnames(o) == 'BAD'))
     stop("Column names not transferred.")
   if (length(x) == 2) {

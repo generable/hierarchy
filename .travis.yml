@@ -1,0 +1,20 @@
+# R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
+os: linux
+language: r
+r:
+  - oldrel
+  - release
+  - devel
+cache: packages
+repos:
+  CRAN: https://cloud.r-project.org
+  ropensci: http://packages.ropensci.org
+r_github_packages:
+  - r-lib/covr
+  - r-lib/devtools
+  - r-lib/testthat
+script:
+  - Rscript -e 'devtools::install_deps(dependencies = T, upgrade = "always")'
+  - Rscript -e 'devtools::install_local(force = T, upgrade = "always")'
+  - Rscript -e 'devtools::session_info()'
+  - Rscript -e 'res=devtools::test(reporter="summary");df=as.data.frame(res);if(sum(df$failed) > 0 || any(df$error)) {q(status=1)}'
