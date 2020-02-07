@@ -45,22 +45,39 @@ fmm_factory = methods::setRefClass(Class = "fmm",
     .col_terms = "list",
     .col_names = "character",
     .group_lengths = "list",
-    .state_terms = "array",
-    .n_state_terms = "numeric",
-    .constant_terms = "array",
+
     .n_constant_terms = "numeric",
-    .coefficient_terms = "array",
-    .n_coefficient_terms = "numeric",
+    .constant_terms = "array",
+    .constant_names = "character",
+    .constant_start = "array",
+    .constant_stop = "array",
+    .n_constant_columns = "numeric",
+    .constant_columns = "array",
+
     .random_terms = "array",
     .n_random_terms = "numeric",
-    .re_names = "character",
+    .random_names = "character",
     .n_re = "numeric",
-    .n_re_effects = "numeric",
-    .re_start = "array",
-    .re_stop = "array",
+    .n_random_effects = "numeric",
+    .random_start = "array",
+    .random_stop = "array",
+
+    .n_state_terms = "numeric",
+    .state_terms = "array",
     .state_names = "character",
     .state_start = "array",
     .state_stop = "array",
+    .n_state_columns = "numeric",
+    .state_columns = "array",
+
+    .n_coefficient_terms = "numeric",
+    .coefficient_terms = "array",
+    .coefficient_names = "character",
+    .coefficient_start = "array",
+    .coefficient_stop = "array",
+    .n_coefficient_columns = "numeric",
+    .coefficient_columns = "array",
+
     .data = "environment",
     .configuration = "environment",
     .same = "array"
@@ -129,39 +146,50 @@ fmm_factory = methods::setRefClass(Class = "fmm",
       .self$.term_names = gsub('^term\\(', '', .self$.term_names)
       .self$.term_names = gsub('\\)$', '', .self$.term_names)
 
-      # Group to columns    FIXME: need this
-      #.self$.group_columns = mml$group_columns
-      #.self$.group_terms = mml$group_terms
-
-      # Columns to (multiple) groups   FIXME: need this
-      #.self$.col_group = mml$col_group
-      #.self$.col_terms = mml$col_terms
-      #.self$.col_names = mml$names
-      #.self$.group_lengths = mml$group_lengths
-      
-      # effect types
+      # Group effect types
       term_block_expressions = names(.self$.blocks$term)
-      .self$.state_terms = array(which(sapply(parse(text = term_block_expressions), has_, 'state')))
-      .self$.n_state_terms = length(.self$.state_terms)
+
+      #. constant indexing
       .self$.constant_terms = array(which(sapply(parse(text = term_block_expressions), has_, 'constant')))
       .self$.n_constant_terms = length(.self$.constant_terms)
-      .self$.coefficient_terms = array(setdiff(1:.self$.n_col,
-        c(.self$.state_terms, .self$.constant_terms)))
-      .self$.n_coefficient_terms = length(.self$.coefficient_terms)
-      .self$.random_terms =  array(which(sapply(parse(text = term_block_expressions), has_, 'random')))
-      .self$.n_random_terms = length(.self$.random_terms)
+      .self$.constant_names = .self$.term_names[.self$.constant_terms]
+      .self$.constant_start = array(.self$.term_start[.self$.constant_terms])
+      .self$.constant_stop = array(.self$.term_stop[.self$.constant_terms])
+      .self$.constant_columns = purrr::map2(.self$constant_start, .self$constant_stop, ~ .x:.y) %>% 
+        purrr::flatten() %>% purrr::map_int() %>% array()
+      .self$.n_constant_columns = length(.self$.constant_columns)
 
       # r.e. indexing.
-      .self$.re_names = .self$.term_names[.self$.random_terms]
-      .self$.n_re = length(.self$.random_terms)
-      .self$.re_start = array(.self$.term_start[.self$.random_terms])
-      .self$.re_stop = array(.self$.term_stop[.self$.random_terms])
+      .self$.random_terms =  array(which(sapply(parse(text = term_block_expressions), has_, 'random')))
+      .self$.n_random_terms = length(.self$.random_terms)
+      .self$.random_names = .self$.term_names[.self$.random_terms]
+      .self$.random_start = array(.self$.term_start[.self$.random_terms])
+      .self$.random_stop = array(.self$.term_stop[.self$.random_terms])
+      .self$.random_columns = purrr::map2(.self$random_start, .self$random_stop, ~ .x:.y) %>% 
+        purrr::flatten() %>% purrr::map_int() %>% array()
+      .self$.n_random_columns = length(.self$.random_columns)
 
       # state indexing.
+      .self$.state_terms = array(which(sapply(parse(text = term_block_expressions), has_, 'state')))
+      .self$.n_state_terms = length(.self$.state_terms)
       .self$.state_names = .self$.term_names[.self$.state_terms]
       .self$.state_start = array(.self$.term_start[.self$.state_terms])
       .self$.state_stop = array(.self$.term_stop[.self$.state_terms])
+      .self$.state_columns = purrr::map2(.self$state_start, .self$state_stop, ~ .x:.y) %>% 
+        purrr::flatten() %>% purrr::map_int() %>% array()
+      .self$.n_state_columns = length(.self$.state_columns)
       .self$.same = array(compute_same(xv = .model$list$xv, start = .model$list$start, stop = .model$list$stop, nze = .model$list$nze, n_state_terms = .self$.n_state_terms))
+
+      # combined non-state, non-constant terms
+      .self$.coefficient_terms = array(setdiff(1:.self$.n_col,
+        c(.self$.state_terms, .self$.constant_terms)))
+      .self$.n_coefficient_terms = length(.self$.coefficient_terms)
+      .self$.coefficient_names = .self$.term_names[.self$.coefficient_terms]
+      .self$.coefficient_start = array(.self$.term_start[.self$.coefficient_terms])
+      .self$.coefficient_stop = array(.self$.term_stop[.self$.coefficient_terms])
+      .self$.coefficient_columns = purrr::map2(.self$coefficient_start, .self$coefficient_stop, ~ .x:.y) %>% 
+        purrr::flatten() %>% purrr::map_int() %>% array()
+      .self$.n_coefficient_columns = length(.self$.coefficient_columns)
     },
     expose = function(...) {
       "Extractor that takes a named vector and provides the relevant
