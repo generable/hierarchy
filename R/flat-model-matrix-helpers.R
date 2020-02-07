@@ -169,3 +169,39 @@ compute_same <- function(xv, start, stop, nze, n_state_terms = 0) {
 }
 
 
+index_terms = function(x, type) {
+  o = grepl(paste0(type, '\\('), names(x$.blocks$term)) %>% 
+      which() %>% array
+  return(o)
+}
+
+merge_start_stop = function(start, stop) {
+  stopifnot(isTRUE(all(unlist(purrr::map2(start, stop, ~ .x <= .y)))))
+  o = purrr::map2(start, stop, ~ .x:.y) %>% 
+    purrr::flatten() %>% 
+    purrr::map_int(~.) %>% 
+    array()
+  return(o)
+}
+
+#' Combine start/stops into a vector of indexes
+block_by_type = function(x, type, terms = NULL) {
+  if (is.null(terms)) {
+    terms = index_terms(x, type)
+  }
+  names = x$.term_names[terms]
+  if (length(names) > 0) {
+    start = x$.term_start[terms]
+    stop = x$.term_stop[terms]
+    columns = merge_start_stop(start, stop)
+  } else {
+    start = integer()
+    stop = integer()
+    columns = integer()
+  }
+  o = list(terms = array(terms), names = names,
+    start = array(start), stop = array(stop), columns = array(columns),
+    n_terms = length(terms), n_columns = length(columns))
+  return(o)
+}
+  
