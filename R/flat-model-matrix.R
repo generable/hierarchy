@@ -40,7 +40,6 @@ fmm_factory = methods::setRefClass(Class = "fmm",
     .term_stop = "array",
     .term_names = "character",
     .group_columns = "list",
-    .group_terms = "list",
     .col_group = "character",
     .col_terms = "list",
     .col_names = "character",
@@ -220,15 +219,13 @@ fmm_factory = methods::setRefClass(Class = "fmm",
       fields = names(methods::getRefClass("fmm")$fields())
       return(fields)
     },
-    list_terms = function() {
-      return(names(.self$.group_terms))
-    },
     get_data = function() {
       "Get the data frame used to construct the matrix."
       return(as.list(.self$.data))
     },
     n_row = function() .self$.n_row,
     n_col = function() .self$.n_col,
+    list_terms = function() .self$.term_names,
     check_component = function(component) {
       "Verify that the requested (formula) component is 
        in the model matrix and return its name.  If none
@@ -255,31 +252,41 @@ fmm_factory = methods::setRefClass(Class = "fmm",
     skips = function() .self$.skips,
     start = function(component = NULL) {
       component = .self$check_component(component)
-      return(.self$.start[component])
+      term_idx = .self$.term_names %in% component
+      return(.self$.start[term_idx])
     },
     stop = function(component = NULL) {
       component = .self$check_component(component)
-      return(.self$.stop[component])
+      term_idx = .self$.term_names %in% component
+      return(.self$.stop[term_idx])
     },
     x = function(component = NULL) {
       component = .self$check_component(component)
-      groups = .self$group(component)
-      start = .self$.start
-      stop = .self$.stop
       o = list()
       for (i in 1:length(component))
-        o[[c]] = .self$.xv[start[i]:stop[i]]
+        start = .self$start(component[i])
+        stop = .self$stop(component[i])
+        o[[c]] = .self$.xv[start:stop]
       return(o)
-    },
-    groups = function(component = NULL) {
-      component = .self$check_component(component)
-      return(.self$.groups[component])
     },
     get_matrix = function(flat=FALSE) {
       if (flat)
         return(.self$.model$list)
       else
         return(.self$.model$matrix)
+    },
+    get_coefficient_names = function() colnames(.self$.model$matrix),
+    get_term_coefficient_names = function() purrr::map(.self$.blocks$term, ~ colnames(.)),
+    get_term_names = function() names(.self$.blocks$term),
+    get_term_member_levels = function() {
+      parts = purrr::map(.self$get_term_coefficient_names(), 
+        ~ stringr::str_split(., '::'))
+      return(parts)
+    },
+    get_column_member_levels = function() {
+      parts = stringr::str_split(
+        .self$get_coefficient_names(), '::')
+      return(parts)
     }
   )
 )
