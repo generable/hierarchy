@@ -134,6 +134,14 @@ row_part <- function(vals, start, stop) {
               ~ if (is.na(.x)) {NA} else if (.x == 0) {0} else {vals[.x:.y]})
 }
 
+test_near <- function(a, b, ...) {
+  if (length(a) == length(b)) {
+    dplyr::near(a, b, ...)
+  } else {
+    # if lengths differ, all comparisons are FALSE
+    purrr::rep_along(a, FALSE)
+  }
+}
 #' test each row of sparse-matrix values against a previous row's values
 #' where each row's values are indexed by start & stop vectors
 #' 
@@ -142,7 +150,7 @@ row_parts_equal_prev <- function(vals, start, stop) {
   # test each row against its previous values
   purrr::map2(row_part(vals, start, stop),
               row_part(vals, dplyr::lag(start), dplyr::lag(stop)),
-              dplyr::near) %>%
+              test_near) %>%
     # convert 0-length vector to FALSE
     purrr::modify_if(~ length(.) == 0, ~ FALSE) %>%
     # a row is TRUE only if all values are equivalent
