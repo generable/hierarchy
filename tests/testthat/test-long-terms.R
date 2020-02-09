@@ -9,4 +9,4 @@ test_that('one can create an fmm with a long term', {
                                   state(a)), 
                   data = gtcars %>% dplyr::filter(!is.na(ctry_origin) & !is.na(trq_rpm)),
                   configuration = list(X = list(k = 5, min = 3000, max = 9000)))
-}
+})
