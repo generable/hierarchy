@@ -125,7 +125,7 @@ test_that('.random_terms & .random_columns are right with an interaction, standa
   num_random_columns2 <- num_random_columns1 * num_dummies
   mm <- formulate(models = list(X ~ ctry_origin + random(year) + ctry_origin:random(year)), data = gtcars)
   # random term is the 2nd term
-  testthat::expect_equivalent(mm$matrices$X$.random_terms, 1 + seq_len(num_randoms))
+  testthat::expect_equivalent(mm$matrices$X$.random_terms, 1 + seq_len(num_random_terms))
   # random_column should be num_dummies + 1
   testthat::expect_equivalent(mm$matrices$X$.random_columns, num_dummies + seq_len(num_random_columns1 + num_random_columns2))
   # coefficient columns should be seq_len(num_dummies)
@@ -161,7 +161,7 @@ test_that('.random_terms & .random_columns are right with an interaction, using 
   num_random_columns2 <- num_random_columns1 * num_dummies
   mm <- formulate(models = list(X ~ intercept(ctry_origin) + random(year) + intercept(ctry_origin):random(year)), data = gtcars)
   # random term is the 2nd term
-  testthat::expect_equivalent(mm$matrices$X$.random_terms, 1 + seq_len(num_randoms))
+  testthat::expect_equivalent(mm$matrices$X$.random_terms, 1 + seq_len(num_random_terms))
   # random_column should be num_dummies + 1
   testthat::expect_equivalent(mm$matrices$X$.random_columns, num_dummies + seq_len(num_random_columns1 + num_random_columns2))
   # coefficient columns should be seq_len(num_dummies)
