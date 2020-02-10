@@ -141,7 +141,7 @@ fmm_factory = methods::setRefClass(Class = "fmm",
       .self$.n_terms = length(.self$.term_width)
       .self$.term_stop = array(cumsum(.self$.term_width))
       .self$.term_start = array(c(1, .self$.term_stop[-.self$.n_terms] + 1))
-      .self$.term_names = sapply(.self$.specifiers$term_list[['rhs']], deparse)
+      .self$.term_names = sapply(.self$.specifiers$term_list[['rhs']], deparse, width.cutoff = 300L)
       .self$.term_names = gsub('^term\\(', '', .self$.term_names)
       .self$.term_names = gsub('\\)$', '', .self$.term_names)
 
