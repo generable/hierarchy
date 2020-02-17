@@ -77,9 +77,9 @@ test_that("simple factor-random model is correctly constructed", {
   mm = fmm$.model$matrix
   expect_equivalent(Matrix::colSums(mm), rep(2, 26))
   expect_equivalent(Matrix::rowSums(mm), rep(1, 2 * 26))
-  expect_equivalent(fmm$.re_start, 1)
-  expect_equivalent(fmm$.re_stop, 26)
-  expect_equal(fmm$.re_names, 'random(treatment_type)')
+  expect_equivalent(fmm$.random_start, 1)
+  expect_equivalent(fmm$.random_stop, 26)
+  expect_equal(fmm$.random_names, 'random(treatment_type)')
   expect_true(all(fmm$.same == 0))
 })
 
@@ -92,9 +92,9 @@ test_that("simple factor-random model is correctly constructed (& adjacent rows 
   mm = fmm$.model$matrix
   expect_equivalent(Matrix::colSums(mm), rep(2, 26))
   expect_equivalent(Matrix::rowSums(mm), rep(1, 2 * 26))
-  expect_equivalent(fmm$.re_start, 1)
-  expect_equivalent(fmm$.re_stop, 26)
-  expect_equal(fmm$.re_names, 'random(treatment_type)')
+  expect_equivalent(fmm$.random_start, 1)
+  expect_equivalent(fmm$.random_stop, 26)
+  expect_equal(fmm$.random_names, 'random(treatment_type)')
   expect_equivalent(fmm$.same, rep(c(0,1), times = 26))
 })
 
@@ -106,9 +106,9 @@ test_that("simple intercept plus factor-random model is correctly constructed", 
   mm = fmm$.model$matrix
   expect_equivalent(Matrix::colSums(mm), c(nrow(mm), rep(2, 26)))
   expect_equivalent(Matrix::rowSums(mm), rep(2, 2 * 26))
-  expect_equivalent(fmm$.re_start, 2)
-  expect_equivalent(fmm$.re_stop, 27)
-  expect_equal(fmm$.re_names, c('random(treatment_type)'))
+  expect_equivalent(fmm$.random_start, 2)
+  expect_equivalent(fmm$.random_stop, 27)
+  expect_equal(fmm$.random_names, c('random(treatment_type)'))
   expect_true(all(fmm$.same == 0))
 })
 
@@ -121,9 +121,9 @@ test_that("simple intercept plus factor-random model is correctly constructed (&
   mm = fmm$.model$matrix
   expect_equivalent(Matrix::colSums(mm), c(nrow(mm), rep(2, 26)))
   expect_equivalent(Matrix::rowSums(mm), rep(2, 2 * 26))
-  expect_equivalent(fmm$.re_start, 2)
-  expect_equivalent(fmm$.re_stop, 27)
-  expect_equal(fmm$.re_names, c('random(treatment_type)'))
+  expect_equivalent(fmm$.random_start, 2)
+  expect_equivalent(fmm$.random_stop, 27)
+  expect_equal(fmm$.random_names, c('random(treatment_type)'))
   expect_equivalent(fmm$.same, rep(c(0,1), times = 26))
 })
 
@@ -136,9 +136,9 @@ test_that("simple intercept plus factor-random model is correctly constructed", 
   mm = fmm$.model$matrix
   expect_equivalent(Matrix::colSums(mm), c(nrow(mm), rep(2, 26)))
   expect_equivalent(Matrix::rowSums(mm), rep(2, 2 * 26))
-  expect_equivalent(fmm$.re_start, 2)
-  expect_equivalent(fmm$.re_stop, 27)
-  expect_equal(fmm$.re_names, c('random(treatment_type)'))
+  expect_equivalent(fmm$.random_start, 2)
+  expect_equivalent(fmm$.random_stop, 27)
+  expect_equal(fmm$.random_names, c('random(treatment_type)'))
   
 })
 
@@ -162,9 +162,9 @@ test_that("simple intercept plus factor-random interaction model is correctly co
   used_columns = which(colnames(mm) %in% used_columns)
   expect_equivalent(Matrix::colSums(mm[,used_columns]), used_counts)  
   expect_equivalent(Matrix::rowSums(mm), rep(1, nrow(mm)) + (data$dogs != "A"))
-  expect_equivalent(fmm$.re_start, 2)
-  expect_equivalent(fmm$.re_stop, ncol(mm))
-  expect_equal(fmm$.re_names, c('dogs, random(treatment_type)'))
+  expect_equivalent(fmm$.random_start, 2)
+  expect_equivalent(fmm$.random_stop, ncol(mm))
+  expect_equal(fmm$.random_names, c('dogs, random(treatment_type)'))
   expect_true(all(fmm$.same == 0))
 })
 
@@ -189,9 +189,9 @@ test_that("simple intercept plus factor-random interaction model is correctly co
   used_columns = which(colnames(mm) %in% used_columns)
   expect_equivalent(Matrix::colSums(mm[,used_columns]), used_counts)  
   expect_equivalent(Matrix::rowSums(mm), rep(1, nrow(mm)) + (data$dogs != "A"))
-  expect_equivalent(fmm$.re_start, 2)
-  expect_equivalent(fmm$.re_stop, ncol(mm))
-  expect_equal(fmm$.re_names, c('dogs, random(treatment_type)'))
+  expect_equivalent(fmm$.random_start, 2)
+  expect_equivalent(fmm$.random_stop, ncol(mm))
+  expect_equal(fmm$.random_names, c('dogs, random(treatment_type)'))
   expect_equivalent(fmm$.same, rep(c(0,1,1), times = 21))
 })
 
@@ -216,9 +216,9 @@ test_that("simple intercept plus factor-random interaction model is correctly co
   used_columns = which(colnames(mm) %in% used_columns)
   expect_equivalent(Matrix::colSums(mm[,used_columns]), used_counts)  
   expect_equivalent(Matrix::rowSums(mm), rep(2, nrow(mm)))
-  expect_equivalent(fmm$.re_start, 2)
-  expect_equivalent(fmm$.re_stop, ncol(mm))
-  expect_equal(fmm$.re_names, c('intercept(dogs), random(treatment_type)'))
+  expect_equivalent(fmm$.random_start, 2)
+  expect_equivalent(fmm$.random_stop, ncol(mm))
+  expect_equal(fmm$.random_names, c('intercept(dogs), random(treatment_type)'))
 })
 
 test_that("simple spline model is correctly constructed", {
@@ -268,9 +268,9 @@ test_that("simple spline-random-factor interaction model is correctly constructe
   mm = fmm$.model$matrix
   expect_equal(ncol(mm), length(unique(data$dogs)) * configuration$k)
   expect_equivalent(Matrix::rowSums(mm), rep(1, nrow(mm)))
-  expect_equal(fmm$.re_names, fmm$.term_names)
-  expect_equivalent(fmm$.re_start, 1)
-  expect_equivalent(fmm$.re_stop, 32)
+  expect_equal(fmm$.random_names, fmm$.term_names)
+  expect_equivalent(fmm$.random_start, 1)
+  expect_equivalent(fmm$.random_stop, 32)
 })
 
 test_that("simple intercept plus spline-contrast interaction model is correctly constructed", {

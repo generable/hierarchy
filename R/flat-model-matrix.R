@@ -40,27 +40,43 @@ fmm_factory = methods::setRefClass(Class = "fmm",
     .term_stop = "array",
     .term_names = "character",
     .group_columns = "list",
-    .group_terms = "list",
     .col_group = "character",
     .col_terms = "list",
     .col_names = "character",
     .group_lengths = "list",
-    .state_terms = "array",
-    .n_state_terms = "numeric",
+
     .constant_terms = "array",
     .n_constant_terms = "numeric",
-    .coefficient_terms = "array",
-    .n_coefficient_terms = "numeric",
+    .constant_names = "character",
+    .constant_start = "array",
+    .constant_stop = "array",
+    .n_constant_columns = "numeric",
+    .constant_columns = "array",
+
     .random_terms = "array",
     .n_random_terms = "numeric",
-    .re_names = "character",
-    .n_re = "numeric",
-    .n_re_effects = "numeric",
-    .re_start = "array",
-    .re_stop = "array",
+    .random_names = "character",
+    .random_start = "array",
+    .random_stop = "array",
+    .n_random_columns = "numeric",
+    .random_columns = "array",
+
+    .n_state_terms = "numeric",
+    .state_terms = "array",
     .state_names = "character",
     .state_start = "array",
     .state_stop = "array",
+    .n_state_columns = "numeric",
+    .state_columns = "array",
+
+    .n_coefficient_terms = "numeric",
+    .coefficient_terms = "array",
+    .coefficient_names = "character",
+    .coefficient_start = "array",
+    .coefficient_stop = "array",
+    .n_coefficient_columns = "numeric",
+    .coefficient_columns = "array",
+
     .data = "environment",
     .configuration = "environment",
     .same = "array"
@@ -125,43 +141,53 @@ fmm_factory = methods::setRefClass(Class = "fmm",
       .self$.n_terms = length(.self$.term_width)
       .self$.term_stop = array(cumsum(.self$.term_width))
       .self$.term_start = array(c(1, .self$.term_stop[-.self$.n_terms] + 1))
-      .self$.term_names = sapply(.self$.specifiers$term_list[['rhs']], deparse, width.cutoff = 200L)
+      .self$.term_names = sapply(.self$.specifiers$term_list[['rhs']], deparse, width.cutoff = 300L)
       .self$.term_names = gsub('^term\\(', '', .self$.term_names)
       .self$.term_names = gsub('\\)$', '', .self$.term_names)
 
-      # Group to columns    FIXME: need this
-      #.self$.group_columns = mml$group_columns
-      #.self$.group_terms = mml$group_terms
+      # Group effect types
+      # Constant indexing
+      constant = block_by_type(.self, 'constant')
+      .self$.constant_terms = constant$terms
+      .self$.n_constant_terms = constant$n_terms
+      .self$.constant_names = constant$names
+      .self$.constant_start = constant$start
+      .self$.constant_stop = constant$stop
+      .self$.constant_columns = constant$columns
+      .self$.n_constant_columns = constant$n_columns
 
-      # Columns to (multiple) groups   FIXME: need this
-      #.self$.col_group = mml$col_group
-      #.self$.col_terms = mml$col_terms
-      #.self$.col_names = mml$names
-      #.self$.group_lengths = mml$group_lengths
-      
-      # effect types
-      term_block_expressions = names(.self$.blocks$term)
-      .self$.state_terms = array(which(sapply(parse(text = term_block_expressions), has_, 'state')))
-      .self$.n_state_terms = length(.self$.state_terms)
-      .self$.constant_terms = array(which(sapply(parse(text = term_block_expressions), has_, 'constant')))
-      .self$.n_constant_terms = length(.self$.constant_terms)
-      .self$.coefficient_terms = array(setdiff(1:.self$.n_col,
-        c(.self$.state_terms, .self$.constant_terms)))
-      .self$.n_coefficient_terms = length(.self$.coefficient_terms)
-      .self$.random_terms =  array(which(sapply(parse(text = term_block_expressions), has_, 'random')))
-      .self$.n_random_terms = length(.self$.random_terms)
+      # Random effect indexing
+      random = block_by_type(.self, 'random')
+      .self$.random_terms = random$terms
+      .self$.n_random_terms = random$n_terms
+      .self$.random_names = random$names
+      .self$.random_start = random$start
+      .self$.random_stop = random$stop
+      .self$.random_columns = random$columns
+      .self$.n_random_columns = random$n_columns
 
-      # r.e. indexing.
-      .self$.re_names = .self$.term_names[.self$.random_terms]
-      .self$.n_re = length(.self$.random_terms)
-      .self$.re_start = array(.self$.term_start[.self$.random_terms])
-      .self$.re_stop = array(.self$.term_stop[.self$.random_terms])
-
-      # state indexing.
-      .self$.state_names = .self$.term_names[.self$.state_terms]
-      .self$.state_start = array(.self$.term_start[.self$.state_terms])
-      .self$.state_stop = array(.self$.term_stop[.self$.state_terms])
+      # State indexing.
+      state = block_by_type(.self, 'state')
+      .self$.state_terms = state$terms
+      .self$.n_state_terms = state$n_terms
+      .self$.state_names = state$names
+      .self$.state_start = state$start
+      .self$.state_stop = state$stop
+      .self$.state_columns = state$columns
+      .self$.n_state_columns = state$n_columns
       .self$.same = array(compute_same(xv = .model$list$xv, start = .model$list$start, stop = .model$list$stop, nze = .model$list$nze, n_state_terms = .self$.n_state_terms))
+
+      # Combined non-state, non-constant terms indexing
+      .self$.coefficient_terms = array(setdiff(1:.self$.n_terms,
+        c(.self$.state_terms, .self$.constant_terms)))
+      coefficient = block_by_type(.self, 'coefficient', .self$.coefficient_terms)
+      .self$.coefficient_terms = coefficient$terms
+      .self$.n_coefficient_terms = coefficient$n_terms
+      .self$.coefficient_names = coefficient$names
+      .self$.coefficient_start = coefficient$start
+      .self$.coefficient_stop = coefficient$stop
+      .self$.coefficient_columns = coefficient$columns
+      .self$.n_coefficient_columns = coefficient$n_columns
     },
     expose = function(...) {
       "Extractor that takes a named vector and provides the relevant
@@ -193,15 +219,13 @@ fmm_factory = methods::setRefClass(Class = "fmm",
       fields = names(methods::getRefClass("fmm")$fields())
       return(fields)
     },
-    list_terms = function() {
-      return(names(.self$.group_terms))
-    },
     get_data = function() {
       "Get the data frame used to construct the matrix."
       return(as.list(.self$.data))
     },
     n_row = function() .self$.n_row,
     n_col = function() .self$.n_col,
+    list_terms = function() .self$.term_names,
     check_component = function(component) {
       "Verify that the requested (formula) component is 
        in the model matrix and return its name.  If none
@@ -228,31 +252,41 @@ fmm_factory = methods::setRefClass(Class = "fmm",
     skips = function() .self$.skips,
     start = function(component = NULL) {
       component = .self$check_component(component)
-      return(.self$.start[component])
+      term_idx = .self$.term_names %in% component
+      return(.self$.start[term_idx])
     },
     stop = function(component = NULL) {
       component = .self$check_component(component)
-      return(.self$.stop[component])
+      term_idx = .self$.term_names %in% component
+      return(.self$.stop[term_idx])
     },
     x = function(component = NULL) {
       component = .self$check_component(component)
-      groups = .self$group(component)
-      start = .self$.start
-      stop = .self$.stop
       o = list()
       for (i in 1:length(component))
-        o[[c]] = .self$.xv[start[i]:stop[i]]
+        start = .self$start(component[i])
+        stop = .self$stop(component[i])
+        o[[c]] = .self$.xv[start:stop]
       return(o)
-    },
-    groups = function(component = NULL) {
-      component = .self$check_component(component)
-      return(.self$.groups[component])
     },
     get_matrix = function(flat=FALSE) {
       if (flat)
         return(.self$.model$list)
       else
         return(.self$.model$matrix)
+    },
+    get_coefficient_names = function() colnames(.self$.model$matrix),
+    get_term_coefficient_names = function() purrr::map(.self$.blocks$term, ~ colnames(.)),
+    get_term_names = function() names(.self$.blocks$term),
+    get_term_member_levels = function() {
+      parts = purrr::map(.self$get_term_coefficient_names(), 
+        ~ stringr::str_split(., '::'))
+      return(parts)
+    },
+    get_column_member_levels = function() {
+      parts = stringr::str_split(
+        .self$get_coefficient_names(), '::')
+      return(parts)
     }
   )
 )

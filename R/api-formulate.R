@@ -53,11 +53,12 @@ formulate = function(models = list(),
   expose_components = c(
     "n_nze", "n_col", "n_row", 
     "start", "stop", "nze", "skips",
-    "col_start", "col_stop", "col_skips", "col_nze", "col_xv_nze", "col_n_nze",
-    "state_terms", "n_state_terms", "state_start", "state_stop",
-    "constant_terms", "n_constant_terms",
-    "coefficient_terms", "n_coefficient_terms",
-    "n_re", "re_start", "re_stop", "xv", "same")
+    "col_start", "col_stop", "col_skips", "col_nze", "col_xv_nze", "col_n_nze", "xv",
+    "constant_terms", "n_constant_terms", "constant_start", "constant_stop", "constant_columns", "n_constant_columns",
+    "random_terms", "n_random_terms", "random_start", "random_stop", "random_columns", "n_random_columns",
+    "state_terms", "n_state_terms", "state_start", "state_stop", "state_columns", "n_state_columns",
+    "coefficient_terms", "n_coefficient_terms", "coefficient_start", "coefficient_stop", "coefficient_columns", "n_coefficient_columns",
+    "same")
 
   stan_inputs = list()
   for (name in response_names) {
