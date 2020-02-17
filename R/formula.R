@@ -288,7 +288,9 @@ default_imbue_methods = function() list(
       names(x) = dots
       for (i in seq_along(x)) {
 	if (!is.list(x[[i]]) && is.null(attr(x[[i]], 'type'))) {
+	  if (!is.factor(x[[i]])) {
           x[[i]] = as.character(x[[i]])
+	  }
           attr(x[[i]], 'type') = 'intercept'
           attr(x[[i]], 'effect_type') = 'fixed'
 	} 
@@ -317,7 +319,9 @@ default_imbue_methods = function() list(
       x = list(...)
       for (i in seq_along(x)) {
         if (!is.list(x[[i]]) && is.null(attr(x[[i]], 'type'))) {
-          x[[i]] = as.character(x[[i]])
+          if (!is.factor(x[[i]])) {
+            x[[i]] = as.character(x[[i]])
+          }
           attr(x[[i]], 'type') = 'contrast'
           attr(x[[i]], 'effect_type') = 'fixed'
 	      } 
@@ -349,8 +353,10 @@ default_imbue_methods = function() list(
       names(x) = dots
       for (i in seq_along(x)) {
 	if (!is.list(x[[i]]) && is.null(attr(x[[i]], 'type'))) {
-          x[[i]] = as.character(x[[i]])
-          attr(x[[i]], 'type') = 'intercept'
+	  if (!is.factor(x[[i]])) {
+	    x[[i]] = as.character(x[[i]])
+	  }
+	        attr(x[[i]], 'type') = 'intercept'
           attr(x[[i]], 'effect_type') = 'random'
 	} 
         ith_type = attr(x[[i]], 'type')
@@ -368,8 +374,10 @@ default_imbue_methods = function() list(
         else
 	  attr(x[[i]], 'effect_type') = 'random'
         ith_at = attributes(x[[i]])
-	x[[i]] = as.character(x[[i]])
-	attributes(x[[i]]) = ith_at
+        if (!is.factor(x[[i]])) {
+          x[[i]] = as.character(x[[i]])
+        }
+        attributes(x[[i]]) = ith_at
         x[[names(x)[i]]] = list(x[[i]])
       }
     }
@@ -385,7 +393,9 @@ default_imbue_methods = function() list(
       names(x) = dots
       for (i in seq_along(x)) {
         if (!is.list(x[[i]]) && is.null(attr(x[[i]], 'type'))) {
-          x[[i]] = as.character(x[[i]])
+          if (!is.factor(x[[i]])) {
+            x[[i]] = as.character(x[[i]])
+          }
           attr(x[[i]], 'type') = 'contrast'
           attr(x[[i]], 'effect_type') = 'random'
         } 
